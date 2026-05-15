@@ -1,0 +1,3118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CET Master</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root {
+  --color-oasis: #27A3A3; --color-oasis-dark: #1E8282; --color-oasis-light: rgba(39,163,163,0.08);
+  --color-deep: #2D3748; --color-bg: #F7FAFC; --color-card: #FFFFFF;
+  --color-text: #1A202C; --color-text-secondary: #718096; --color-text-tertiary: #A0AEC0;
+  --color-border: rgba(0,0,0,0.05); --color-success: #48BB78; --color-danger: #F56565;
+  --color-cat-L: #27A3A3; --color-cat-R: #48BB78; --color-cat-W: #9F7AEA; --color-cat-none: #A0AEC0;
+  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 24px; --radius-2xl: 32px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04); --shadow-md: 0 4px 12px rgba(0,0,0,0.06); --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+  --font-sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  --safe-top: env(safe-area-inset-top,0px); --safe-bottom: env(safe-area-inset-bottom,0px);
+  --sidebar-w: 220px;
+}
+* { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+html,body { margin:0; padding:0; font-family:var(--font-sans); background:var(--color-bg); color:var(--color-text); -webkit-font-smoothing:antialiased; }
+body { display:flex; min-height:100vh; }
+.sidebar { width:var(--sidebar-w); background:var(--color-deep); color:#fff; display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0; z-index:100; overflow-y:auto; }
+.sidebar-brand { padding:20px 16px 12px; font-size:18px; font-weight:800; letter-spacing:-0.3px; border-bottom:1px solid rgba(255,255,255,0.08); }
+.sidebar-brand span { background:linear-gradient(135deg,#27A3A3,#48BB78); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.nav-item { display:flex; align-items:center; gap:10px; padding:10px 16px; margin:2px 8px; border-radius:var(--radius-md); font-size:14px; font-weight:500; color:rgba(255,255,255,0.6); cursor:pointer; transition:all 0.15s; border:none; background:transparent; width:calc(100% - 16px); text-align:left; }
+.nav-item:hover { background:rgba(255,255,255,0.06); color:#fff; }
+.nav-item.active { background:rgba(39,163,163,0.2); color:#27A3A3; }
+.nav-item svg { width:18px; height:18px; flex-shrink:0; }
+.main-area { margin-left:var(--sidebar-w); flex:1; max-width:calc(100vw - var(--sidebar-w)); padding-bottom:0; }
+.view { display:none; padding:20px 20px 100px; max-width:760px; margin:0 auto; animation:fadeSlideIn 0.25s ease; }
+.view.active { display:block; }
+@keyframes fadeSlideIn { from { opacity:0;transform:translateY(8px); } to { opacity:1;transform:translateY(0); } }
+.card { background:var(--color-card); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); transition:box-shadow 0.2s; }
+.card-xl { border-radius:var(--radius-2xl); box-shadow:var(--shadow-md); }
+.card-premium { background:rgba(255,255,255,0.8); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.3); border-radius:24px; }
+.stat-number { font-size:32px; font-weight:700; letter-spacing:-0.5px; line-height:1; }
+.stat-label { font-size:13px; color:var(--color-text-secondary); font-weight:500; }
+.btn-primary { background:var(--color-oasis); color:#fff; border-radius:var(--radius-xl); padding:12px 28px; font-weight:600; font-size:15px; border:none; cursor:pointer; transition:all 0.15s; min-height:44px; }
+.btn-primary:active { background:var(--color-oasis-dark); transform:scale(0.97); }
+.btn-ghost { background:transparent; color:var(--color-oasis); border-radius:var(--radius-xl); padding:10px 20px; font-weight:500; font-size:15px; border:none; cursor:pointer; min-height:44px; }
+.btn-ghost:active { background:var(--color-oasis-light); }
+.meter-bg { background:#EDF2F7; border-radius:100px; height:8px; overflow:hidden; }
+.meter-fill { height:100%; border-radius:100px; transition:width 0.4s cubic-bezier(0.25,0.46,0.45,0.94); }
+.heat-grid { display:grid; grid-template-columns:repeat(53,1fr); gap:3px; }
+.heat-cell { aspect-ratio:1; border-radius:3px; cursor:pointer; min-width:8px; }
+.heat-cell-0 { background:#EDF2F7; } .heat-cell-1 { background:rgba(39,163,163,0.15); } .heat-cell-2 { background:rgba(39,163,163,0.3); }
+.heat-cell-3 { background:rgba(39,163,163,0.5); } .heat-cell-4 { background:rgba(39,163,163,0.7); } .heat-cell-5 { background:var(--color-oasis); }
+.heat-cell-today { outline:2px solid var(--color-oasis); outline-offset:-1px; }
+.heat-cell-exam { position:relative; }
+.heat-cell-exam-high { background:linear-gradient(135deg,#48BB78,#38A169) !important; }
+.heat-cell-exam-mid { background:linear-gradient(135deg,#27A3A3,#1E8282) !important; }
+.heat-cell-exam-low { background:linear-gradient(135deg,#F56565,#E53E3E) !important; }
+.heat-cell-exam::after { content:'★';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:7px;color:rgba(255,255,255,0.9);line-height:1; }
+.word-tag { display:inline-flex; align-items:center; padding:6px 14px; border-radius:20px; font-size:14px; font-weight:500; cursor:pointer; margin:4px; user-select:none; min-height:36px; }
+.word-tag:active { transform:scale(0.92); }
+.word-tag-none { background:#EDF2F7; color:var(--color-text-secondary); } .word-tag-L { background:rgba(39,163,163,0.1); color:var(--color-cat-L); }
+.word-tag-R { background:rgba(72,187,120,0.1); color:var(--color-cat-R); } .word-tag-W { background:rgba(159,122,234,0.1); color:var(--color-cat-W); }
+.tab-btn { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:6px 0; font-size:10px; color:var(--color-text-tertiary); cursor:pointer; border:none; background:transparent; min-height:44px; }
+.tab-btn.active { color:var(--color-oasis); } .tab-btn svg { width:22px; height:22px; margin-bottom:2px; }
+.toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px); background:rgba(0,0,0,0.8); color:#fff; padding:12px 24px; border-radius:var(--radius-xl); font-size:14px; font-weight:500; z-index:1000; opacity:0; transition:all 0.3s; pointer-events:none; backdrop-filter:blur(10px); }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:500; display:none; align-items:flex-end; justify-content:center; backdrop-filter:blur(4px); }
+.modal-overlay.show { display:flex; }
+.modal-sheet { background:#fff; border-radius:var(--radius-2xl) var(--radius-2xl) 0 0; padding:24px; padding-bottom:calc(24px + var(--safe-bottom)); width:100%; max-width:480px; animation:slideUp 0.35s; max-height:70vh; overflow-y:auto; }
+@keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+input[type="range"] { -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:3px; background:#EDF2F7; outline:none; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:24px; height:24px; border-radius:50%; background:#fff; box-shadow:0 2px 6px rgba(39,163,163,0.3); cursor:pointer; border:2px solid var(--color-oasis); }
+::-webkit-scrollbar { width:0; height:0; }
+.mobile-tab-bar { display:none; }
+@media (max-width:768px) {
+  .sidebar { display:none; }
+  .main-area { margin-left:0; max-width:100vw; }
+  .view { padding:16px 12px 80px; }
+  .mobile-tab-bar { display:flex; position:fixed; bottom:0; left:0; right:0; z-index:100; background:rgba(255,255,255,0.85); backdrop-filter:blur(20px); border-top:0.5px solid rgba(0,0,0,0.08); padding-bottom:var(--safe-bottom); }
+}
+.word-lookup-word { font-size:22px;font-weight:700;margin-bottom:4px; }
+.word-lookup-phonetic { font-size:14px;color:var(--color-oasis);margin-bottom:12px; }
+.word-lookup-meaning { margin-bottom:16px; }
+.word-lookup-pos { font-weight:600;font-size:14px;color:var(--color-text-secondary);margin-bottom:4px; }
+.word-lookup-def { font-size:15px;line-height:1.6;margin-bottom:2px; }
+.word-lookup-example { font-size:13px;color:var(--color-text-tertiary);font-style:italic;margin-left:12px;margin-bottom:8px;padding-left:8px;border-left:2px solid var(--color-border); }
+.word-lookup-add-btn { width:100%;padding:12px;border-radius:var(--radius-xl);font-weight:600;font-size:15px;cursor:pointer;border:none;transition:all 0.15s;min-height:44px; }
+.word-lookup-added { background:#EDF2F7;color:var(--color-text-secondary); }
+.wl-cat-btn { flex:1;padding:10px 8px;border-radius:12px;border:2px solid #E2E8F0;background:#fff;cursor:pointer;font-size:13px;font-weight:500;color:var(--color-text);transition:all 0.15s;text-align:center;min-height:40px; }
+.wl-cat-btn:hover { border-color:#CBD5E0;background:#FAFAFA; }
+.wl-cat-btn.active-cat-r { border-color:var(--color-cat-R);background:rgba(72,187,120,0.08);color:var(--color-cat-R); }
+.wl-cat-btn.active-cat-l { border-color:var(--color-cat-L);background:rgba(39,163,163,0.08);color:var(--color-cat-L); }
+.wl-cat-btn.active-cat-w { border-color:var(--color-cat-W);background:rgba(159,122,234,0.08);color:var(--color-cat-W); }
+.word-lookup-loading { text-align:center;padding:40px 20px;color:var(--color-text-secondary);font-size:15px; }
+.word-lookup-highlight { background:#FFF3CD !important; color:#856404 !important; border-radius:2px; transition:background 0.3s; }
+.review-card { background:var(--color-card);border-radius:var(--radius-2xl);box-shadow:var(--shadow-md);padding:32px 24px;margin-bottom:16px;text-align:center; }
+.review-word { font-size:36px;font-weight:700;letter-spacing:-0.5px;margin:16px 0 8px;line-height:1.3; }
+.review-phonetic { font-size:16px;color:var(--color-oasis);margin-bottom:16px; }
+.review-meaning { font-size:15px;color:var(--color-text);line-height:1.8;padding:12px 16px;background:rgba(39,163,163,0.04);border-radius:12px;margin-bottom:16px;display:none; }
+.review-meaning.show { display:block; }
+.review-example { font-size:14px;color:var(--color-text-secondary);line-height:1.8;padding:12px 16px;background:#FAF5F0;border-radius:12px;margin-bottom:8px;font-style:italic; }
+.review-example-blank { font-size:15px;color:var(--color-text-secondary);line-height:1.9;padding:14px 18px;background:#FAF5F0;border-radius:12px;margin-bottom:12px; }
+.review-example-blank .blank-highlight { display:inline-block;padding:2px 12px;border-bottom:2px solid var(--color-oasis);color:var(--color-oasis);font-weight:600;font-style:normal; }
+.review-example-blank .blank-input { display:inline-block;width:120px;border:none;border-bottom:2px dashed var(--color-oasis);background:transparent;font-size:15px;font-weight:600;color:var(--color-oasis);text-align:center;outline:none;font-family:var(--font-sans);margin:0 4px; }
+.review-example-blank .blank-input:focus { border-bottom-color:#ED8936;border-bottom-style:solid; }
+.review-example-blank .blank-input.correct { border-bottom-color:var(--color-success);color:var(--color-success); }
+.review-example-blank .blank-input.wrong { border-bottom-color:var(--color-danger);color:var(--color-danger); }
+.review-badge { display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:12px; }
+.review-badge-r { background:rgba(72,187,120,0.1);color:var(--color-cat-R); }
+.review-badge-l { background:rgba(39,163,163,0.1);color:var(--color-cat-L); }
+.review-badge-w { background:rgba(159,122,234,0.1);color:var(--color-cat-W); }
+.review-badge-none { background:#EDF2F7;color:var(--color-text-secondary); }
+.review-quiz-card { background:var(--color-card);border-radius:var(--radius-2xl);box-shadow:var(--shadow-md);padding:24px 20px;margin-bottom:16px; }
+.review-sentence { font-size:16px;line-height:2;color:var(--color-text);padding:18px 20px;background:#FAF8F6;border-radius:16px;border:1px solid #F0EDE8;margin-bottom:16px;max-width:100%; }
+.review-blank { display:inline-block;min-width:80px;border-bottom:3px solid var(--color-oasis);color:transparent;margin:0 2px;vertical-align:middle; }
+.review-options-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px; }
+.review-option-btn { width:100%;padding:14px 16px;border-radius:14px;border:2px solid #E2E8F0;background:#fff;cursor:pointer;font-size:14px;font-weight:500;color:var(--color-text);transition:all 0.12s;text-align:left;min-height:48px;font-family:var(--font-sans); }
+.review-option-btn:hover { border-color:var(--color-oasis);color:var(--color-oasis);background:rgba(39,163,163,0.04);transform:translateY(-1px); }
+.review-option-btn.correct { border-color:var(--color-success);background:rgba(72,187,120,0.1);color:var(--color-success);cursor:default; }
+.review-option-btn.wrong { border-color:var(--color-danger);background:rgba(245,101,101,0.1);color:var(--color-danger);cursor:default; }
+.writ-answer { width:100%;min-height:160px;padding:14px;border:1.5px solid #E2E8F0;border-radius:14px;font-size:15px;line-height:1.8;resize:vertical;font-family:var(--font-sans);background:#fff;transition:border-color 0.15s;outline:none; }
+.writ-answer:focus { border-color:var(--color-oasis);box-shadow:0 0 0 3px rgba(39,163,163,0.08); }
+.writ-answer::placeholder { color:#CBD5E0; }
+.ai-result { padding:16px 18px;background:#F7FAFC;border-radius:14px;border:1px solid #E8ECF0;font-size:14px;line-height:1.8; }
+.ai-result h5 { font-size:14px;font-weight:600;color:var(--color-oasis);margin:12px 0 6px; }
+.ai-result h5:first-child { margin-top:0; }
+.ai-result ul { padding-left:20px;margin:6px 0; }
+.ai-result li { margin:4px 0; }
+.ai-result .score-big { display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:var(--color-oasis);color:#fff;font-size:24px;font-weight:700; }
+.rp-card { background:#fff;border-radius:20px;padding:24px 22px;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,0.05);border:1px solid #F0F2F5; }
+.rp-card h4 { font-size:16px;font-weight:700;margin:0 0 14px;display:flex;align-items:center;gap:8px; }
+.rp-card hr { border:none;border-top:1px solid #EDF2F7;margin:14px 0; }
+.rp-level-badge { display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:20px;font-size:14px;font-weight:600; }
+.rp-level-high { background:linear-gradient(135deg,#48BB78,#38A169);color:#fff; }
+.rp-level-mid { background:linear-gradient(135deg,#ED8936,#DD6B20);color:#fff; }
+.rp-level-low { background:linear-gradient(135deg,#F56565,#E53E3E);color:#fff; }
+.rp-tag { display:inline-block;padding:4px 14px;border-radius:12px;font-size:12px;font-weight:500;margin:2px; }
+.rp-tag-green { background:rgba(72,187,120,0.12);color:#38A169; }
+.rp-tag-blue { background:rgba(39,163,163,0.12);color:#1E8282; }
+.rp-tag-orange { background:rgba(237,137,54,0.12);color:#DD6B20; }
+.rp-tag-purple { background:rgba(159,122,234,0.12);color:#7C3AED; }
+.rp-section { display:flex;gap:16px;margin-bottom:14px;padding:14px 16px;background:#F7FAFC;border-radius:14px;border-left:4px solid var(--color-oasis); }
+.rp-section-icon { font-size:22px;flex-shrink:0;width:36px;text-align:center; }
+.rp-section-body { flex:1;font-size:14px;line-height:1.8;color:var(--color-text); }
+.rp-section-body strong { color:var(--color-oasis-dark); }
+.rp-progress-bar { height:10px;background:#EDF2F7;border-radius:5px;overflow:hidden;margin:8px 0; }
+.rp-progress-fill { height:100%;border-radius:5px;transition:width 0.6s ease; }
+.rp-mindmap { display:flex;flex-wrap:wrap;gap:8px;padding:12px 0;justify-content:center; }
+.rp-mindmap-node { padding:10px 18px;border-radius:14px;font-size:13px;font-weight:500;text-align:center;min-width:80px;border:2px solid;transition:transform 0.15s;cursor:default; }
+.rp-mindmap-node:hover { transform:scale(1.05); }
+.rp-mindmap-center { background:var(--color-oasis);color:#fff;border-color:var(--color-oasis);padding:14px 24px;font-size:15px;font-weight:700;border-radius:20px;width:100%;text-align:center;margin-bottom:4px; }
+.rp-tip { background:linear-gradient(135deg,#FFF8E8,#FFF3CD);border-radius:14px;padding:14px 18px;font-size:13px;color:#856404;line-height:1.8;border:1px solid #FFEAA7;margin:12px 0; }
+.rp-tip strong { color:#6B5900; }
+.rp-score-chart { display:flex;align-items:flex-end;gap:6px;height:120px;padding:10px 4px 0; }
+.rp-chart-bar { flex:1;border-radius:6px 6px 0 0;min-width:20px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative;transition:height 0.4s;padding-top:4px; }
+.rp-chart-bar .bar-val { font-size:11px;font-weight:700;color:var(--color-text);margin-bottom:2px; }
+.rp-chart-bar .bar-label { font-size:10px;color:var(--color-text-tertiary);margin-top:4px;white-space:nowrap;transform:rotate(-30deg); }
+::selection { background:#D4EDDA; color:#155724; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-brand"><span>CET Master</span></div>
+  <div style="padding:8px 0;flex:1;">
+    <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>仪表盘
+    </button>
+    <button class="nav-item" data-view="exam" onclick="switchView('exam')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>真题考试
+    </button>
+    <button class="nav-item" data-view="exambrowse" onclick="switchView('exambrowse')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>真题浏览
+    </button>
+    <button class="nav-item" data-view="transcript" onclick="switchView('transcript')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6M9 16h6M9 8h6"/><rect x="4" y="2" width="16" height="20" rx="2"/></svg>成绩单
+    </button>
+    <button class="nav-item" data-view="vocab" onclick="switchView('vocab')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/></svg>生词本
+    </button>
+    <button class="nav-item" data-view="checkin" onclick="switchView('checkin')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>打卡
+    </button>
+    <button class="nav-item" data-view="review" onclick="switchView('review')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>复习
+    </button>
+    <button class="nav-item" data-view="data" onclick="switchView('data')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>数据
+    </button>
+  </div>
+</div>
+
+<!-- Main Area -->
+<div class="main-area">
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- VIEW: Dashboard -->
+<div id="view-dashboard" class="view active">
+  <div class="flex gap-3 mb-4">
+    <div class="card flex-1 p-4 text-center"><div class="stat-number" id="dash-streak">0</div><div class="stat-label mt-1">连续天数</div></div>
+    <div class="card flex-1 p-4 text-center"><div class="stat-number" id="dash-total">0</div><div class="stat-label mt-1">总词数</div></div>
+    <div class="card flex-1 p-4 text-center"><div class="stat-number" id="dash-today">0</div><div class="stat-label mt-1">今日新增</div></div>
+  </div>
+  <div class="card-xl p-5 mb-4" style="background:linear-gradient(135deg,#27A3A3,#2D3748);color:#fff;">
+    <div class="flex items-center justify-between mb-3">
+      <div><div style="font-size:13px;opacity:0.8;">今日打卡</div><div style="font-size:28px;font-weight:700;" id="dash-date-label"></div></div>
+      <button id="checkin-btn-dash" class="bg-white text-[#27A3A3] font-semibold px-8 py-3 rounded-full text-base" style="min-height:48px;">打卡</button>
+    </div>
+  </div>
+  <div class="card-xl p-5 mb-4">
+    <h2 style="font-size:16px;font-weight:600;margin-bottom:12px;">学习热力图</h2>
+    <div id="heatmap-container" style="overflow-x:auto;padding-bottom:4px;"></div>
+  </div>
+  <div class="card-xl p-5 mb-4">
+    <h2 style="font-size:16px;font-weight:600;margin-bottom:12px;">成绩趋势</h2>
+    <div id="score-trend-container"></div>
+  </div>
+  <div class="card-xl p-5 mb-4">
+    <h2 style="font-size:16px;font-weight:600;margin-bottom:12px;">单词分类统计</h2>
+    <div id="category-stats" class="space-y-3"></div>
+  </div>
+</div>
+
+<!-- VIEW: Exam -->
+<div id="view-exam" class="view">
+  <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">真题考试</h2>
+  <div id="exam-content"></div>
+  <div id="exam-timer-display" class="fixed top-4 right-4 bg-white shadow-lg rounded-xl px-4 py-2 text-sm font-semibold z-50 hidden" style="color:var(--color-oasis);"></div>
+</div>
+
+<!-- VIEW: Exambrowse -->
+<div id="view-exambrowse" class="view">
+  <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">真题浏览</h2>
+  <div id="exambrowse-container"></div>
+</div>
+
+<!-- Exam Browse Reading Mode Overlay -->
+<div id="exambrowse-reading-mode" class="eb-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--color-bg);z-index:200;flex-direction:column;">
+  <style>
+    .eb-overlay { display:none; }
+    .eb-overlay.active { display:flex !important; }
+    .eb-header { display:flex;align-items:center;padding:8px 12px;padding-top:calc(8px + var(--safe-top));border-bottom:1px solid var(--color-border);gap:8px;flex-shrink:0;background:rgba(255,255,255,0.8);backdrop-filter:blur(20px); }
+    .eb-title { flex:1;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .eb-close-btn { width:36px;height:36px;border-radius:50%;border:none;background:var(--color-oasis-light);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--color-oasis); }
+    .eb-audio-area { display:flex;align-items:center;padding:10px 16px;gap:12px;border-bottom:1px solid var(--color-border);background:rgba(39,163,163,0.04);flex-shrink:0; }
+    .eb-play-btn { width:40px;height:40px;border-radius:50%;border:none;background:var(--color-oasis);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+    .eb-audio-progress { flex:1; }
+    .eb-audio-time { font-size:11px;color:var(--color-text-tertiary);font-variant-numeric:tabular-nums;white-space:nowrap; }
+    .eb-page-indicator { text-align:center;padding:8px 16px;font-size:13px;color:var(--color-text-secondary);border-bottom:1px solid var(--color-border);flex-shrink:0; }
+    .eb-content { flex:1;overflow-y:auto;padding:20px 16px 16px;font-size:15px;line-height:1.9; }
+    .eb-content-inner { max-width:680px;margin:0 auto; }
+    .eb-content-inner h3 { font-size:16px;font-weight:600;margin:0 0 12px; }
+    .eb-content-inner .section-title { font-size:15px;font-weight:600;color:var(--color-oasis);margin:20px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--color-border); }
+    .eb-content-inner .direction-text { background:rgba(39,163,163,0.04);padding:12px 16px;border-radius:12px;margin-bottom:16px;font-size:14px;color:var(--color-text-secondary); }
+    .eb-content-inner .question-group { margin-bottom:18px;padding-bottom:6px;border-bottom:1px dashed var(--color-border); }
+    .eb-content-inner .question-text { font-weight:600;font-size:15px;margin-bottom:14px;line-height:1.7;padding:12px 14px;background:#F7FAFC;border-left:4px solid var(--color-oasis);border-radius:0 10px 10px 0;color:#1a1a1a; }
+    .eb-content-inner .option-btn { display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;padding:11px 14px;border:1px solid #E8ECF0;border-radius:10px;margin:8px 0;background:#fff;cursor:pointer;font-size:14px;line-height:1.5;transition:all 0.15s ease;box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+    .eb-content-inner .option-btn:hover { border-color:var(--color-oasis);box-shadow:0 2px 8px rgba(39,163,163,0.1); }
+    .eb-content-inner .option-btn.selected { border-color:var(--color-oasis);background:rgba(39,163,163,0.06);color:var(--color-oasis);box-shadow:0 0 0 1px var(--color-oasis); }
+    .eb-content-inner .option-letter { display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#F0F2F5;color:#666;font-weight:700;font-size:13px;flex-shrink:0;margin-top:1px; }
+    .eb-content-inner .option-btn.selected .option-letter { background:var(--color-oasis);color:#fff; }
+    .eb-content-inner .option-text { flex:1;padding-top:2px; }
+    .question-text { font-weight:600;font-size:15px;margin-bottom:12px;line-height:1.7;padding:12px 14px;background:#F7FAFC;border-left:4px solid var(--color-oasis);border-radius:0 10px 10px 0;color:#1a1a1a; }
+    .option-btn { display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;padding:11px 14px;border:1px solid #E8ECF0;border-radius:10px;margin:8px 0;background:#fff;cursor:pointer;font-size:14px;line-height:1.5;transition:all 0.15s ease;box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+    .option-btn:hover { border-color:var(--color-oasis);box-shadow:0 2px 8px rgba(39,163,163,0.1); }
+    .option-btn.selected { border-color:var(--color-oasis);background:rgba(39,163,163,0.06);color:var(--color-oasis);box-shadow:0 0 0 1px var(--color-oasis); }
+    .option-letter { display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#F0F2F5;color:#666;font-weight:700;font-size:13px;flex-shrink:0;margin-top:1px; }
+    .option-btn.selected .option-letter { background:var(--color-oasis);color:#fff; }
+    .option-text { flex:1;padding-top:2px; }
+    .sa-passage { font-size:15px;line-height:2.2;color:var(--color-text);padding:20px 24px;background:#FAF8F6;border-radius:16px;margin-bottom:20px;border:1px solid #F0EDE8; }
+    .sa-passage .direction-text { background:rgba(39,163,163,0.04);padding:12px 16px;border-radius:12px;margin-bottom:16px;font-size:14px;color:var(--color-text-secondary);line-height:1.7;display:block; }
+    .sa-blanks-row { display:inline; }
+    .blank-slot { display:inline-block;padding:4px 12px;margin:3px 2px;border:2px dashed #B8D4D4;border-radius:10px;cursor:pointer;font-weight:600;color:#5A9E9E;min-width:52px;text-align:center;transition:all 0.15s;font-size:14px;vertical-align:middle;background:rgba(255,255,255,0.8);position:relative; }
+    .blank-slot:hover { border-color:var(--color-oasis);background:rgba(39,163,163,0.06);color:var(--color-oasis); }
+    .blank-slot.selected { border-color:#ED8936;background:rgba(237,137,54,0.1);color:#ED8936;box-shadow:0 0 0 2px rgba(237,137,54,0.2);border-style:solid; }
+    .blank-slot.blank-filled { border-style:solid;border-color:var(--color-oasis);background:rgba(39,163,163,0.07);color:var(--color-oasis);box-shadow:0 1px 4px rgba(39,163,163,0.1); }
+    .blank-slot .blank-label { font-size:11px;color:#A0AEC0;font-weight:400;display:block;line-height:1; }
+    .blank-slot.blank-filled .blank-label { color:rgba(39,163,163,0.5); }
+    .wb-grid { display:flex;flex-wrap:wrap;gap:8px;padding:16px 20px;background:#F7FAFC;border-radius:16px;border:1px solid #E8ECF0;margin-bottom:16px; }
+    .wb-btn { padding:8px 18px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;cursor:pointer;font-size:14px;font-weight:500;color:var(--color-text);transition:all 0.15s;min-height:40px;font-family:var(--font-sans); }
+    .wb-btn:hover { border-color:var(--color-oasis);color:var(--color-oasis);box-shadow:0 2px 8px rgba(39,163,163,0.1);transform:translateY(-1px); }
+    .wb-btn.wb-used { opacity:0.3;pointer-events:none;background:#EDF2F7;border-color:#E2E8F0;text-decoration:line-through; }
+    .wb-btn .wb-key { color:#A0AEC0;font-weight:400;margin-right:2px; }
+    .wb-btn:hover .wb-key { color:var(--color-oasis); }
+    .sb-passage { margin-bottom:24px; }
+    .sb-para { display:flex;gap:14px;padding:16px 18px;margin-bottom:8px;background:#FAF8F6;border-radius:14px;border:1px solid #F0EDE8;line-height:1.8;font-size:14px;transition:all 0.15s; }
+    .sb-para:hover { border-color:#E0DCD4;background:#F8F6F2; }
+    .sb-para-badge { flex-shrink:0;width:32px;height:32px;border-radius:8px;background:var(--color-oasis);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;margin-top:2px; }
+    .sb-para-text { flex:1;color:var(--color-text); }
+    .sb-question { padding:16px 18px;margin-bottom:10px;background:var(--color-card);border:1px solid #E8ECF0;border-radius:16px;transition:all 0.15s; }
+    .sb-question:hover { border-color:#D0D6DD; }
+    .sb-question-stem { font-size:14px;font-weight:500;color:var(--color-text);line-height:1.7;margin-bottom:12px;padding:4px 0; }
+    .sb-question-stem .qnum { display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;border-radius:6px;background:#EDF2F7;color:var(--color-text-secondary);font-weight:700;font-size:13px;margin-right:8px; }
+    .sb-letter-grid { display:flex;flex-wrap:wrap;gap:6px; }
+    .sb-letter-btn { width:36px;height:36px;border-radius:8px;border:1.5px solid #E2E8F0;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:var(--color-text);transition:all 0.12s;display:flex;align-items:center;justify-content:center; }
+    .sb-letter-btn:hover { border-color:var(--color-oasis);color:var(--color-oasis);background:rgba(39,163,163,0.04);transform:translateY(-1px); }
+    .sb-letter-btn.selected { border-color:var(--color-oasis);background:var(--color-oasis);color:#fff;box-shadow:0 2px 8px rgba(39,163,163,0.2); }
+    .eb-content-inner .passage-text { background:#FAF5F0;padding:14px 16px;border-radius:12px;margin-bottom:12px;font-size:14px;line-height:1.8; }
+    .eb-nav-bar { display:flex;padding:12px 16px;padding-bottom:calc(12px + var(--safe-bottom));border-top:1px solid var(--color-border);gap:12px;flex-shrink:0;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px); }
+    .eb-nav-btn { flex:1;padding:10px;border-radius:var(--radius-lg);border:1px solid var(--color-border);background:var(--color-card);cursor:pointer;font-size:14px;font-weight:500;text-align:center; }
+    .eb-nav-btn.primary { background:var(--color-oasis);color:#fff;border-color:transparent; }
+    .eb-nav-btn:active { transform:scale(0.97); }
+    .eb-writing-prompt { background:linear-gradient(135deg,#FAF5F0,#F0F7F4);padding:20px;border-radius:16px;margin-bottom:16px;font-size:15px;line-height:1.9; }
+  </style>
+  <div class="eb-header">
+    <div class="eb-title" id="eb-reading-title"></div>
+    <button class="eb-close-btn" onclick="exitExambrowseReading()">&#x2715;</button>
+  </div>
+  <div id="eb-audio-area" class="eb-audio-area hidden" style="display:none;">
+    <audio id="eb-native-audio" controls style="width:100%;height:40px;"></audio>
+  </div>
+  <div id="eb-page-indicator" class="eb-page-indicator">第 1 / N 页</div>
+  <div class="eb-content"><div id="eb-content-inner" class="eb-content-inner"></div></div>
+  <div class="eb-nav-bar">
+    <button id="eb-prev-btn" class="eb-nav-btn" onclick="goEBPage(-1)">&#x25C0; 上一页</button>
+    <button id="eb-next-btn" class="eb-nav-btn primary" onclick="goEBPage(1)">下一页 &#x25B6;</button>
+  </div>
+</div>
+
+<!-- VIEW: Vocab -->
+<div id="view-vocab" class="view">
+  <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">生词本</h2>
+  <div class="card-xl p-5 mb-4">
+    <h3 style="font-size:15px;font-weight:600;margin-bottom:8px;">粘贴文章</h3>
+    <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:12px;">粘贴英文文章、真题段落，系统自动提取并去重所有单词</p>
+    <textarea id="article-input" style="width:100%;min-height:100px;padding:12px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-size:14px;line-height:1.6;resize:vertical;" placeholder="在此粘贴英文文章或真题文本..."></textarea>
+    <button id="parse-btn" class="btn-primary w-full mt-3" onclick="parseArticle()">解析单词</button>
+  </div>
+  <div class="card-xl p-5 mb-4">
+    <div class="flex items-center justify-between mb-3">
+      <h3 style="font-size:15px;font-weight:600;">单词列表</h3>
+      <span id="word-count-badge" style="font-size:13px;color:var(--color-text-secondary);">0 个单词</span>
+    </div>
+    <div id="word-list" class="flex flex-wrap gap-1" style="min-height:50px;"><span style="color:var(--color-text-tertiary);font-size:14px;">暂无单词，先粘贴文章解析吧</span></div>
+    <div class="flex gap-2 mt-4"><button class="btn-ghost text-sm flex-1" onclick="clearAllWords()">清空全部单词</button></div>
+  </div>
+  <div class="card-xl p-5 mb-4">
+    <h3 style="font-size:15px;font-weight:600;margin-bottom:12px;">分类统计</h3>
+    <div class="grid grid-cols-3 gap-3 text-center">
+      <div style="background:rgba(39,163,163,0.08);border-radius:16px;padding:12px;"><div style="font-size:20px;font-weight:700;color:var(--color-cat-L);" id="stat-L">0</div><div style="font-size:12px;color:var(--color-text-secondary);">听力 L</div></div>
+      <div style="background:rgba(72,187,120,0.08);border-radius:16px;padding:12px;"><div style="font-size:20px;font-weight:700;color:var(--color-cat-R);" id="stat-R">0</div><div style="font-size:12px;color:var(--color-text-secondary);">阅读 R</div></div>
+      <div style="background:rgba(159,122,234,0.08);border-radius:16px;padding:12px;"><div style="font-size:20px;font-weight:700;color:var(--color-cat-W);" id="stat-W">0</div><div style="font-size:12px;color:var(--color-text-secondary);">写作 W</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW: Checkin -->
+<div id="view-checkin" class="view">
+  <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">打卡记录</h2>
+  <div id="checkin-content"></div>
+</div>
+
+<!-- VIEW: Review -->
+<div id="view-review" class="view">
+  <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">复习</h2>
+  <div id="review-content"></div>
+</div>
+
+<!-- VIEW: Transcript -->
+<div id="view-transcript" class="view">
+  <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">成绩单</h2>
+  <div id="transcript-content"></div>
+</div>
+
+<!-- VIEW: Data -->
+<div id="view-data" class="view">
+  <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">数据管理</h2>
+  <div class="card-xl p-5 mb-4">
+    <h3 style="font-size:15px;font-weight:600;margin-bottom:8px;">导出词库</h3>
+    <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:12px;">导出全部单词为 CSV 文件</p>
+    <button class="btn-primary w-full" onclick="exportCSV()">导出 CSV</button>
+  </div>
+  <div class="card-xl p-5 mb-4">
+    <h3 style="font-size:15px;font-weight:600;margin-bottom:8px;">导入词库</h3>
+    <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:12px;">上传 CSV 文件导入单词，自动跳过重复项</p>
+    <label class="btn-primary w-full text-center block cursor-pointer">选择 CSV 文件<input type="file" id="import-input" accept=".csv" style="display:none;"></label>
+    <div id="import-result" class="mt-3"></div>
+  </div>
+  <div class="card-xl p-5 mb-4">
+    <h3 style="font-size:15px;font-weight:600;margin-bottom:8px;">清除数据</h3>
+    <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:12px;">清除所有本地数据，此操作不可撤销</p>
+    <button style="width:100%;padding:12px;border:1.5px solid var(--color-danger);border-radius:var(--radius-xl);color:var(--color-danger);font-weight:600;font-size:15px;background:transparent;cursor:pointer;" onclick="clearAllData()">清除所有数据</button>
+  </div>
+  <div class="card-xl p-5 mb-4">
+    <h3 style="font-size:15px;font-weight:600;margin-bottom:8px;">数据概览</h3>
+    <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.8;">
+      <div>单词总数：<strong id="data-word-count">0</strong></div>
+      <div>打卡记录：<strong id="data-checkin-count">0</strong> 天</div>
+      <div>最高连续：<strong id="data-max-streak">0</strong> 天</div>
+      <div>存储占用：<strong id="data-storage-size">0 KB</strong></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- Mobile Tab Bar -->
+<div class="mobile-tab-bar">
+  <button class="tab-btn active" onclick="switchView('dashboard')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>仪表盘</span>
+  </button>
+  <button class="tab-btn" onclick="switchView('exam')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>真题</span>
+  </button>
+  <button class="tab-btn" onclick="switchView('exambrowse')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>浏览</span>
+  </button>
+  <button class="tab-btn" onclick="switchView('vocab')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/></svg><span>生词</span>
+  </button>
+  <button class="tab-btn" onclick="switchView('data')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg><span>数据</span>
+  </button>
+</div>
+
+<!-- Word Lookup Popup -->
+<div id="word-lookup-overlay" class="modal-overlay" onclick="closeWordLookup(event)">
+  <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:80vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div id="word-lookup-word" class="word-lookup-word"></div>
+        <button id="wl-audio-btn" onclick="playWLAudio()" style="width:36px;height:36px;border-radius:50%;border:none;background:var(--color-oasis-light);cursor:pointer;display:none;align-items:center;justify-content:center;font-size:18px;color:var(--color-oasis);" title="发音">&#9654;</button>
+      </div>
+      <button onclick="closeWordLookup()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--color-text-tertiary);padding:4px;">&times;</button>
+    </div>
+    <div id="word-lookup-phonetic" class="word-lookup-phonetic"></div>
+    <div id="wl-chinese" style="font-size:16px;line-height:1.8;color:var(--color-text);padding:8px 12px;background:rgba(39,163,163,0.04);border-radius:10px;margin-bottom:12px;display:none;"></div>
+    <div id="word-lookup-defs"></div>
+    <div id="wl-context" style="font-size:13px;color:var(--color-text-secondary);padding:10px 12px;background:#FAF5F0;border-radius:10px;margin-top:12px;line-height:1.7;display:none;"></div>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--color-border);">
+      <div style="font-size:13px;font-weight:600;color:var(--color-text-secondary);margin-bottom:8px;">添加到生词本</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button id="wl-cat-r" class="wl-cat-btn" data-cat="R" onclick="selectWLCat('R')">📖 阅读词汇</button>
+        <button id="wl-cat-l" class="wl-cat-btn" data-cat="L" onclick="selectWLCat('L')">🎧 听力词汇</button>
+        <button id="wl-cat-w" class="wl-cat-btn" data-cat="W" onclick="selectWLCat('W')">✏️ 写作词汇</button>
+      </div>
+      <button id="word-lookup-add-btn" class="word-lookup-add-btn" onclick="addWordFromLookup()">加入生词本</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Dynamic exam data loader - avoids OOM by not inlining 500KB
+// ============================================================
+function ensureExamData(callback) {
+  if (typeof EXAM_DATA !== 'undefined') { callback(); return; }
+  const s = document.createElement('script');
+  s.src = 'exam_data.js';
+  s.onload = callback;
+  s.onerror = function() {
+    showToast('无法加载真题数据文件');
+    if (callback) callback();
+  };
+  document.head.appendChild(s);
+}
+
+// ============================================================
+// State management
+// ============================================================
+const STORE_KEY = 'cet4_master_data';
+const STORAGE_VERSION = 7;
+
+function defaultState() {
+  return {
+    _version: STORAGE_VERSION,
+    words: [],
+    checkins: [],
+    reviewQueue: [],
+    settings: { writingScore: 0, deepseekKey: '' },
+    currentView: 'dashboard',
+    papers: [],
+    examTimer: { running: false, elapsed: 0, paperId: null, lastTick: null },
+    writingAnswers: {},
+    examHistory: []
+  };
+}
+
+let state = loadState();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      const def = defaultState();
+      const merged = { ...def, ...saved };
+      if (merged._version !== STORAGE_VERSION && merged.papers.length > 0) {
+        merged.papers = [];
+      }
+      merged._version = STORAGE_VERSION;
+      return merged;
+    }
+  } catch (e) { /* ignore */ }
+  return defaultState();
+}
+
+function saveState() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+// ============================================================
+// Helpers
+// ============================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._hide); t._hide = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+function getToday() { return new Date().toISOString().slice(0,10); }
+
+// ============================================================
+// View switching
+// ============================================================
+function switchView(view) {
+  try { if (typeof exitExambrowseReading === 'function') exitExambrowseReading(); } catch(e) {}
+  state.currentView = view; saveState();
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('view-' + view);
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.view === view));
+  document.querySelectorAll('.tab-btn').forEach((t,i) => {
+    const views = ['dashboard','exam','exambrowse','vocab','data','transcript'];
+    t.classList.toggle('active', views[i] === view);
+  });
+  const fn = 'render' + view.charAt(0).toUpperCase() + view.slice(1);
+  if (window[fn]) window[fn]();
+}
+
+// ============================================================
+// Dashboard
+// ============================================================
+function renderDashboard() {
+  document.getElementById('dash-streak').textContent = calcStreak();
+  document.getElementById('dash-total').textContent = state.words.length;
+  document.getElementById('dash-today').textContent = state.words.filter(w => w.timestamp && w.timestamp > Date.now() - 86400000).length;
+  const d = new Date();
+  document.getElementById('dash-date-label').textContent = (d.getMonth()+1) + '月' + d.getDate() + '日';
+  const todayCheckin = state.checkins.find(c => c.date === getToday());
+  const btn = document.getElementById('checkin-btn-dash');
+  if (todayCheckin) {
+    btn.textContent = '已打卡 ' + todayCheckin.count + ' 词';
+    btn.style.background = 'rgba(255,255,255,0.2)';
+    btn.style.color = '#fff';
+    btn.disabled = true;
+  } else {
+    btn.textContent = '打卡';
+    btn.style.background = '#fff';
+    btn.style.color = '#27A3A3';
+    btn.disabled = false;
+    btn.onclick = doCheckin;
+  }
+  renderHeatmap();
+  renderScoreTrend();
+  renderCategoryStats();
+}
+
+function calcStreak() {
+  const days = state.checkins.filter(c => c.taskDone).map(c => c.date).sort();
+  if (!days.length) return 0;
+  let streak = 1;
+  const today = getToday();
+  if (days[days.length-1] !== today && days[days.length-1] !== getYesterday()) return 0;
+  for (let i = days.length-1; i > 0; i--) {
+    const diff = (new Date(days[i]) - new Date(days[i-1])) / 86400000;
+    if (diff === 1) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function getYesterday() {
+  const d = new Date(); d.setDate(d.getDate()-1);
+  return d.toISOString().slice(0,10);
+}
+
+function doCheckin() {
+  state.checkins.unshift({ date: getToday(), count: state.words.length, taskDone: true });
+  saveState();
+  renderDashboard();
+  showToast('打卡成功！');
+}
+
+function renderHeatmap() {
+  const container = document.getElementById('heatmap-container');
+  const checkinMap = {};
+  state.checkins.forEach(function(c) { checkinMap[c.date] = c.count; });
+
+  const examMap = {};
+  (state.examHistory || []).forEach(function(h) {
+    var d = new Date(h.date);
+    var ds = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    if (!examMap[ds] || h.score > examMap[ds].score) examMap[ds] = { score: h.score, time: h.timeSpent };
+  });
+
+  var wordGrowth = [];
+  var lastCount = 0;
+  (state.checkins || []).slice().reverse().forEach(function(c) {
+    if (c.count && c.count !== lastCount) { wordGrowth.push({ date: c.date, count: c.count }); lastCount = c.count; }
+  });
+
+  const today = new Date();
+  const oneYearAgo = new Date(today);
+  oneYearAgo.setFullYear(today.getFullYear()-1);
+  oneYearAgo.setDate(oneYearAgo.getDate()+1);
+  let currentDate = new Date(oneYearAgo);
+  const dow = currentDate.getDay();
+  currentDate.setDate(currentDate.getDate() + (dow === 0 ? -6 : 1-dow));
+  const weeks = [];
+  while (currentDate <= today) {
+    const week = [];
+    for (let d = 0; d < 7; d++) {
+      const dateStr = currentDate.toISOString().slice(0,10);
+      const ckCount = checkinMap[dateStr] || 0;
+      const examInfo = examMap[dateStr];
+      let level = 0;
+      if (examInfo) level = 4;
+      else if (ckCount > 0) level = Math.min(3, Math.ceil(ckCount / 10));
+      var label = dateStr;
+      if (examInfo) label += '  考试 ' + examInfo.score + '分';
+      if (ckCount > 0) label += '  单词 ' + ckCount + '词';
+      week.push({ date: dateStr, level: level, isToday: dateStr === getToday(), ckCount: ckCount, examScore: examInfo ? examInfo.score : null, label: label });
+      currentDate.setDate(currentDate.getDate()+1);
+    }
+    weeks.push(week);
+  }
+
+  var totalActive = Object.keys(checkinMap).length;
+  var examDays = Object.keys(examMap).length;
+
+  let html = '<div style="font-size:12px;color:var(--color-text-tertiary);margin-bottom:10px;display:flex;gap:16px;flex-wrap:wrap;">';
+  html += '<span>📅 活跃 ' + totalActive + ' 天</span>';
+  html += '<span>📝 考试 ' + examDays + ' 天</span>';
+  html += '<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#EDF2F7;border:1px solid #E2E8F0;"></span> 无</span>';
+  html += '<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:rgba(39,163,163,0.15);"></span> 单词</span>';
+  html += '<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--color-oasis);"></span> 考试</span>';
+  html += '</div>';
+
+  html += '<div style="display:flex;gap:3px;">';
+  html += '<div style="display:flex;flex-direction:column;gap:3px;padding-right:4px;">';
+  ['','一','','三','','五',''].forEach(function(l) {
+    html += '<div style="font-size:10px;color:var(--color-text-tertiary);line-height:1;height:12px;display:flex;align-items:center;">'+l+'</div>';
+  });
+  html += '</div>';
+  weeks.forEach(function(w) {
+    html += '<div style="display:flex;flex-direction:column;gap:3px;">';
+    w.forEach(function(d) {
+      var cls = 'heat-cell';
+      if (d.examScore) {
+        cls += ' heat-cell-exam heat-cell-exam-' + (d.examScore >= 80 ? 'high' : d.examScore >= 60 ? 'mid' : 'low');
+      } else {
+        cls += ' heat-cell-' + d.level;
+      }
+      if (d.isToday) cls += ' heat-cell-today';
+      html += '<div class="' + cls + '" title="' + d.label + '"></div>';
+    });
+    html += '</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function renderScoreTrend() {
+  var container = document.getElementById('score-trend-container');
+  if (!container) return;
+  var history = state.examHistory || [];
+  if (history.length < 1) {
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--color-text-tertiary);font-size:14px;">完成真题考试后将显示成绩趋势</div>';
+    return;
+  }
+  var recent = history.slice(0, 15).reverse();
+  var maxScore = Math.max.apply(null, recent.map(function(h) { return h.score; }));
+  var minScore = Math.min.apply(null, recent.map(function(h) { return h.score; }));
+  var range = Math.max(maxScore - minScore, 20);
+
+  var html = '<div style="display:flex;align-items:flex-end;gap:8px;padding:12px 4px 0;height:130px;position:relative;">';
+
+  recent.forEach(function(h, i) {
+    var d = new Date(h.date);
+    var label = (d.getMonth()+1) + '/' + d.getDate();
+    var hgt = Math.max(20, (h.score - minScore + 5) / range * 100);
+    var color = h.score >= 80 ? '#48BB78' : h.score >= 60 ? '#27A3A3' : '#F56565';
+    var isLast = i === recent.length - 1;
+
+    html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;position:relative;">';
+    html += '<div style="font-size:10px;font-weight:700;color:' + color + ';margin-bottom:2px;">' + h.score + '</div>';
+    html += '<div style="width:100%;height:' + hgt + 'px;border-radius:4px 4px 0 0;background:linear-gradient(to top,' + color + ',rgba(' + (h.score>=80?'72,187,120':h.score>=60?'39,163,163':'245,101,101') + ',0.3));min-height:8px;' + (isLast ? 'box-shadow:0 0 8px ' + color + ';' : '') + '"></div>';
+    html += '<div style="font-size:9px;color:var(--color-text-tertiary);margin-top:4px;white-space:nowrap;">' + label + '</div>';
+    html += '</div>';
+  });
+
+  html += '</div>';
+
+  if (history.length >= 2) {
+    var latest = history[0].score;
+    var first = history[history.length - 1].score;
+    var diff = latest - first;
+    var trendColor = diff >= 0 ? 'var(--color-success)' : 'var(--color-danger)';
+    var trendIcon = diff >= 0 ? '📈' : '📉';
+    html += '<div style="text-align:center;margin-top:10px;font-size:13px;color:var(--color-text-secondary);">';
+    html += trendIcon + ' 成绩趋势：从 <strong>' + first + '</strong> 分 → <strong>' + latest + '</strong> 分';
+    html += ' <span style="color:' + trendColor + ';font-weight:600;">' + (diff >= 0 ? '+' : '') + diff + '</span>';
+    html += '</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+function renderCategoryStats() {
+  const counts = {L:0,R:0,W:0,none:0};
+  state.words.forEach(w => {
+    const c = w.category || 'none';
+    counts[c] = (counts[c]||0)+1;
+  });
+  const total = state.words.length || 1;
+  document.getElementById('category-stats').innerHTML = [
+    {key:'L',label:'听力',color:'var(--color-cat-L)'},
+    {key:'R',label:'阅读',color:'var(--color-cat-R)'},
+    {key:'W',label:'写作',color:'var(--color-cat-W)'},
+    {key:'none',label:'未标记',color:'var(--color-text-tertiary)'}
+  ].map(c => {
+    const cnt = counts[c.key]||0;
+    return '<div><div class="flex items-center justify-between mb-1"><span style="font-size:13px;color:'+c.color+';font-weight:500;">'+c.label+'</span><span style="font-size:13px;color:var(--color-text-secondary);font-weight:600;">'+cnt+'</span></div><div class="meter-bg"><div class="meter-fill" style="width:'+(cnt/total*100)+'%;background:'+c.color+';"></div></div></div>';
+  }).join('');
+}
+
+// ============================================================
+// Exam mode (考试)
+// ============================================================
+function renderExam() {
+  const container = document.getElementById('exam-content');
+  ensureExamData(function() {
+    if (state.papers.length < EXAM_DATA.length) lazyInitPapers();
+    if (state.papers.length === 0) {
+      container.innerHTML = '<div class="card-xl" style="text-align:center;padding:60px 24px;"><div style="font-size:48px;margin-bottom:16px;">📝</div><p style="color:var(--color-text-secondary);">暂无试卷，请先加载真题数据</p></div>';
+      return;
+    }
+    container.innerHTML = '<div class="space-y-3">' + state.papers.map(p => {
+      if (p.skip) return '';
+      const badge = p.status === 'completed' ? '✅ 已完成' : p.status === 'in_progress' ? '⏳ 进行中' : '📄 未开始';
+      return '<div class="card-xl p-4 cursor-pointer" onclick="startExam(\''+p.id+'\')"><div class="flex items-center justify-between"><div><div style="font-weight:600;font-size:15px;">'+p.title+'</div><div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px;">'+badge+'</div></div><div style="color:var(--color-oasis);font-size:13px;">进入 →</div></div></div>';
+    }).filter(Boolean).join('') + '</div>';
+  });
+}
+
+let examInterval = null;
+
+function startExam(paperId) {
+  state.examTimer = { running: true, elapsed: 0, paperId, lastTick: Date.now(), startTime: Date.now() };
+  saveState();
+  const paper = state.papers.find(p => p.id === paperId);
+  if (paper) paper.status = 'in_progress';
+  renderPaperInExam(paper);
+  if (examInterval) clearInterval(examInterval);
+  examInterval = setInterval(tickExam, 1000);
+}
+
+function tickExam() {
+  if (!state.examTimer.running) return;
+  state.examTimer.elapsed += 1;
+  saveState();
+  const display = document.getElementById('exam-timer-display');
+  if (display) {
+    const m = Math.floor(state.examTimer.elapsed / 60);
+    const s = state.examTimer.elapsed % 60;
+    display.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    display.classList.remove('hidden');
+  }
+}
+
+function getExamMp3Src(paperTitle) {
+  if (typeof EXAM_DATA === 'undefined') return '';
+  var entry = EXAM_DATA.find(function(e) { return e.title === paperTitle; });
+  if (!entry || !entry.file) return '';
+  var mp3 = entry.file.replace(/\.pdf$/i, '.mp3');
+  return 'CET-4 真题/cet4_' + entry.year + '/' + mp3;
+}
+
+function renderPaperInExam(paper) {
+  const container = document.getElementById('exam-content');
+  if (!paper) {
+    container.innerHTML = '<p>试卷数据异常</p>';
+    return;
+  }
+  var mp3Src = getExamMp3Src(paper.title);
+  var hasMp3 = mp3Src !== '';
+  let html = '<div class="card-xl p-5 mb-4"><h3 style="font-size:16px;font-weight:600;margin-bottom:8px;">'+paper.title+'</h3><div style="font-size:13px;color:var(--color-text-secondary);">考试计时中</div></div>';
+  if (hasMp3) {
+    html += '<div class="card-xl p-5 mb-4" style="background:rgba(39,163,163,0.04);" id="exam-audio-wrap"><h4 style="font-size:14px;font-weight:600;color:var(--color-oasis);margin-bottom:8px;">听力音频</h4><audio controls preload="none" style="width:100%;height:40px;" src="'+mp3Src+'" onerror="this.closest(\'#exam-audio-wrap\').style.display=\'none\'"></audio></div>';
+  }
+  paper.sections.forEach(function(s) {
+    html += '<div class="card-xl p-5 mb-4"><h4 style="font-size:15px;font-weight:600;color:var(--color-oasis);margin-bottom:8px;">'+s.title+'</h4>';
+    if (s.wordBank && s.wordBank.length > 0) {
+      var bodyHtml = escapeHtml(cleanText(s.body));
+      bodyHtml = bodyHtml.replace(/_{3,}(\d+)_{3,}/g, function(match, num) {
+        var answer = s.blankAnswers && s.blankAnswers[num] ? s.blankAnswers[num] : null;
+        var isSelected = window._selBlank && window._selBlank.paperId === paper.id && window._selBlank.sectionIdx === paper.sections.indexOf(s) && window._selBlank.blankNum === parseInt(num);
+        if (answer) {
+          return '<span class="blank-slot blank-filled" onclick="clickBlank(\''+paper.id+'\','+paper.sections.indexOf(s)+','+num+')">'+escapeHtml(answer.word)+' <span class="blank-label">('+num+')</span></span>';
+        }
+        var selClass = isSelected ? ' selected' : '';
+        return '<span class="blank-slot'+selClass+'" onclick="clickBlank(\''+paper.id+'\','+paper.sections.indexOf(s)+','+num+')"><span class="blank-label">'+num+'</span> ___</span>';
+      });
+      html += '<div class="sa-passage">' + bodyHtml + '</div>';
+      html += '<div class="wb-grid">';
+      s.wordBank.forEach(function(w) {
+        var used = false;
+        if (s.blankAnswers) {
+          for (var bk in s.blankAnswers) { if (s.blankAnswers[bk].key === w.key) { used = true; break; } }
+        }
+        var usedClass = used ? ' wb-used' : '';
+        html += '<button class="wb-btn'+usedClass+'" onclick="clickWB(\''+paper.id+'\','+paper.sections.indexOf(s)+',\''+w.key+'\')"><span class="wb-key">'+w.key+'.</span> '+escapeHtml(cleanText(w.word))+'</button>';
+      });
+      html += '</div>';
+    } else if (s.paraLabels && s.paraLabels.length > 0) {
+      if (s.questions[0] && (!s.questions[0].options || s.questions[0].options.length < 5)) {
+        s.questions.forEach(function(q) { q.options = s.paraLabels.map(function(l) { return { key: l, text: l }; }); });
+      }
+      var paraHtml = '<div class="sb-passage">';
+      var paraBlocks = cleanText(s.body).split(/(?=\[[A-Z]\])|(?=\n[A-Z]\)\s)/);
+      paraBlocks.forEach(function(pb) {
+        pb = pb.trim();
+        if (!pb) return;
+        var pm = pb.match(/^\[([A-Z])\]\s*(.*)/s) || pb.match(/^[（(]([A-Z])[）)]\s*(.*)/s) || pb.match(/^([A-Z])[.)、]\s*(.*)/s);
+        if (pm) {
+          paraHtml += '<div class="sb-para"><div class="sb-para-badge">'+pm[1]+'</div><div class="sb-para-text">'+escapeHtml(pm[2].trim())+'</div></div>';
+        } else {
+          paraHtml += '<div style="font-size:14px;line-height:1.9;color:var(--color-text-secondary);padding:12px 0;">'+escapeHtml(pb)+'</div>';
+        }
+      });
+      paraHtml += '</div>';
+      html += paraHtml;
+      html += '<div style="border-top:1px dashed #E2E8F0;margin:16px 0 20px;"></div>';
+      s.questions.forEach(function(q) {
+        var sel = q.userSelected || '';
+        var letters = '<div class="sb-letter-grid">';
+        s.paraLabels.forEach(function(l) {
+          var isSel = sel === l ? ' selected' : '';
+          letters += '<button class="sb-letter-btn'+isSel+'" onclick="selectMatchAnswer(\''+paper.id+'\','+paper.sections.indexOf(s)+','+s.questions.indexOf(q)+',\''+l+'\')">'+l+'</button>';
+        });
+        letters += '</div>';
+        html += '<div class="sb-question"><div class="sb-question-stem"><span class="qnum">'+q.id+'</span>'+escapeHtml(cleanText(q.text))+'</div>'+letters+'</div>';
+      });
+    } else if (s.questions && s.questions.length >= 5 && s.questions[0].options && s.questions[0].options.length >= 5 && s.questions[0].options[0].key.match(/^[A-Z]$/)) {
+      html += '<div style="border-top:1px dashed #E2E8F0;margin:4px 0 16px;"></div>';
+      var labels2 = s.paraLabels || [];
+      if (labels2.length === 0) {
+        labels2 = [];
+        for (var li2 = 0; li2 < 14; li2++) labels2.push(String.fromCharCode(65 + li2));
+      }
+      s.questions.forEach(function(q) {
+        var sel = q.userSelected || '';
+        var letters = '<div class="sb-letter-grid">';
+        labels2.forEach(function(l) {
+          var isSel = sel === l ? ' selected' : '';
+          letters += '<button class="sb-letter-btn'+isSel+'" onclick="selectMatchAnswer(\''+paper.id+'\','+paper.sections.indexOf(s)+','+s.questions.indexOf(q)+',\''+l+'\')">'+l+'</button>';
+        });
+        letters += '</div>';
+        html += '<div class="sb-question"><div class="sb-question-stem"><span class="qnum">'+q.id+'</span>'+escapeHtml(cleanText(q.text))+'</div>'+letters+'</div>';
+      });
+    } else {
+      var isWriting = /^Part\s+I\b/i.test(s.title);
+      var isTranslation = /^Part\s+IV\b/i.test(s.title);
+      if ((isWriting || isTranslation) && s.body) {
+        var secId = paper.id.replace(/[^a-z0-9]/gi,'') + '_' + paper.sections.indexOf(s);
+        var saved = state.writingAnswers && state.writingAnswers[paper.id] && state.writingAnswers[paper.id][paper.sections.indexOf(s)] || '';
+        html += '<div style="font-size:14px;line-height:1.7;color:var(--color-text);white-space:pre-wrap;margin-bottom:12px;padding:14px 16px;background:#FAF5F0;border-radius:12px;">'+escapeHtml(cleanText(s.body))+'</div>';
+        html += '<textarea id="writ-area-'+secId+'" class="writ-answer" oninput="saveWritingAnswer(\''+paper.id+'\','+paper.sections.indexOf(s)+')" placeholder="在此处输入你的'+(isWriting?'作文':'翻译')+'...">'+escapeHtml(saved)+'</textarea>';
+        html += '<div style="display:flex;gap:8px;margin-top:10px;">';
+        html += '<button class="btn-primary" style="flex:1;" onclick="checkWritingAI(\''+paper.id+'\','+paper.sections.indexOf(s)+')">🤖 AI 检查</button>';
+        html += '<button class="btn-ghost" onclick="showWritingGuide('+(isWriting?'\"writing\"':'\"translation\"')+')">📖 模板参考</button>';
+        html += '</div>';
+        html += '<div id="writ-result-'+secId+'" style="margin-top:12px;display:none;"></div>';
+      } else {
+        if (s.body) {
+          var bodyText = cleanText(s.body);
+          var hasPassageText = /^\[[A-Z]\]/m.test(bodyText);
+          if (hasPassageText) {
+            html += '<div style="font-size:14px;line-height:1.9;color:var(--color-text);white-space:pre-wrap;margin-bottom:12px;padding:14px 16px;background:#FAF8F6;border-radius:12px;border:1px solid #F0EDE8;">'+escapeHtml(bodyText)+'</div>';
+          } else {
+            html += '<div style="font-size:14px;line-height:1.9;color:var(--color-text);white-space:pre-wrap;margin-bottom:12px;">'+escapeHtml(bodyText)+'</div>';
+          }
+        }
+        s.questions.forEach(function(q) {
+          var qText = escapeHtml(cleanText(q.text));
+          var isLongQuestion = qText.length > 80;
+          html += '<div class="mb-3"><div class="question-text" style="margin-bottom:8px;'+(isLongQuestion?'font-size:14px;font-weight:500;':'')+'">'+q.id+'. '+qText+'</div>';
+          q.options.forEach(function(o) {
+            var sel = q.userSelected === o.key ? 'selected' : '';
+            html += '<div class="option-btn '+sel+'" onclick="selectExamAnswer(\''+paper.id+'\','+paper.sections.indexOf(s)+','+s.questions.indexOf(q)+',\''+o.key+'\')"><span class="option-letter">'+o.key+'</span><span class="option-text">'+escapeHtml(cleanText(o.text))+'</span></div>';
+          });
+          html += '</div>';
+        });
+      }
+    }
+    html += '</div>';
+  });
+  html += '<button class="btn-primary w-full" onclick="endExam(\''+paper.id+'\')">交卷</button>';
+  container.innerHTML = html;
+  setupWordClickHandler(container);
+}
+
+var _clickTimer = null;
+
+function selectExamAnswer(paperId, sectionIdx, qIdx, key) {
+  if (_clickTimer) { clearTimeout(_clickTimer); _clickTimer = null; return; }
+  _clickTimer = setTimeout(function() {
+    _clickTimer = null;
+    const paper = state.papers.find(p => p.id === paperId);
+    if (paper && paper.sections[sectionIdx] && paper.sections[sectionIdx].questions[qIdx]) {
+      paper.sections[sectionIdx].questions[qIdx].userSelected = key;
+      saveState();
+      renderPaperInExam(paper);
+    }
+  }, 280);
+}
+
+function selectMatchAnswer(paperId, sectionIdx, qIdx, key) {
+  const paper = state.papers.find(p => p.id === paperId);
+  if (!paper || !paper.sections[sectionIdx] || !paper.sections[sectionIdx].questions[qIdx]) return;
+  var q = paper.sections[sectionIdx].questions[qIdx];
+  q.userSelected = (q.userSelected === key) ? '' : key;
+  saveState();
+  renderPaperInExam(paper);
+}
+
+function saveWritingAnswer(paperId, sectionIdx) {
+  var secId = paperId.replace(/[^a-z0-9]/gi,'') + '_' + sectionIdx;
+  var el = document.getElementById('writ-area-' + secId);
+  if (!el) return;
+  if (!state.writingAnswers) state.writingAnswers = {};
+  if (!state.writingAnswers[paperId]) state.writingAnswers[paperId] = {};
+  state.writingAnswers[paperId][sectionIdx] = el.value;
+  saveState();
+}
+
+function checkWritingAI(paperId, sectionIdx) {
+  var secId = paperId.replace(/[^a-z0-9]/gi,'') + '_' + sectionIdx;
+  var el = document.getElementById('writ-area-' + secId);
+  var resultEl = document.getElementById('writ-result-' + secId);
+  if (!el || !resultEl) return;
+  var text = el.value.trim();
+  if (!text) { showToast('请先输入内容'); return; }
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = '<div class="ai-result" style="text-align:center;padding:30px;"><div style="font-size:14px;color:var(--color-text-secondary);">🤖 AI 分析中...</div></div>';
+  
+  var paper = state.papers.find(function(p) { return p.id === paperId; });
+  var section = paper ? paper.sections[sectionIdx] : null;
+  var prompt = section ? (section.title) : '作文';
+  var isWriting = /writing/i.test(prompt);
+
+  var wordCount = text.split(/\s+/).length;
+  var sentences = text.split(/[.!?]+/).filter(function(s) { return s.trim().length > 0; }).length;
+  var avgWordLen = text.replace(/\s/g, '').length / (wordCount || 1);
+  var longWords = text.split(/\s+/).filter(function(w) { return w.length > 8; }).length;
+  var vocabScore = Math.min(100, Math.round(40 + longWords / (wordCount || 1) * 200));
+  var sentScore = Math.min(100, Math.round(40 + sentences / (wordCount || 1) * 300));
+
+  var html = '<div class="ai-result">';
+  var totalScore = Math.min(100, Math.round((vocabScore + sentScore) / 2 + (wordCount >= 120 ? 10 : wordCount >= 80 ? 5 : 0)));
+  html += '<div style="text-align:center;margin-bottom:16px;"><div class="score-big">' + totalScore + '</div><div style="font-size:13px;color:var(--color-text-secondary);margin-top:4px;">综合评分</div></div>';
+  
+  html += '<h5>📊 数据分析</h5><ul>';
+  html += '<li>字数：<strong>' + wordCount + '</strong> 词' + (isWriting && wordCount < 120 ? ' <span style="color:var(--color-danger);">（建议至少 120 词）</span>' : '') + '</li>';
+  html += '<li>句子：<strong>' + sentences + '</strong> 句（平均 ' + (sentences > 0 ? (wordCount / sentences).toFixed(1) : 0) + ' 词/句）</li>';
+  html += '<li>高级词汇：<strong>' + longWords + '</strong> 个（占比 ' + (wordCount > 0 ? (longWords / wordCount * 100).toFixed(1) : 0) + '%）</li>';
+  html += '<li>平均词长：<strong>' + avgWordLen.toFixed(1) + '</strong> 字符</li>';
+  html += '</ul>';
+
+  if (isWriting) {
+    html += '<h5>✍️ 写作建议</h5><ul>';
+    if (wordCount < 120) html += '<li>增加内容：当前字数不足，建议扩展论点或添加例子达到 120-180 词</li>';
+    if (sentences < 5) html += '<li>丰富句式：尝试使用复合句和连接词（however, moreover, consequently）</li>';
+    if (longWords < 3) html += '<li>提升词汇：适当使用四级高级词汇替代基础词（如用 significant 代替 important）</li>';
+    html += '<li>结构建议：采用 <strong>引言—论点1—论点2—结论</strong> 的四段式结构</li>';
+    html += '<li>检查要点：确保首段明确立场，尾段总结观点，段落之间有过渡词</li>';
+    html += '</ul>';
+    html += '<h5>🔍 联网搜索模板与例句</h5>';
+    html += '<div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px;">正在搜索最新四级写作模板和万能句型...</div>';
+    html += '<div id="writ-search-' + secId + '"><div style="text-align:center;padding:12px;"><span style="color:var(--color-text-tertiary);">搜索中...</span></div></div>';
+  } else {
+    html += '<h5>🌐 翻译建议</h5><ul>';
+    html += '<li>忠实原文：确保不遗漏原文信息点，不随意增删内容</li>';
+    html += '<li>语序调整：中英文语序不同时，按英文习惯重组句子结构</li>';
+    html += '<li>用词准确：选择最贴切的词汇表达原文含义</li>';
+    html += '<li>时态一致：注意全文时态的统一性</li>';
+    html += '</ul>';
+    html += '<h5>🔍 联网搜索参考译法</h5>';
+    html += '<div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px;">正在搜索相关翻译技巧和参考表达...</div>';
+    html += '<div id="writ-search-' + secId + '"><div style="text-align:center;padding:12px;"><span style="color:var(--color-text-tertiary);">搜索中...</span></div></div>';
+  }
+  html += '</div>';
+  resultEl.innerHTML = html;
+
+  var searchQuery = isWriting ? 'CET4 四级写作万能模板 高分句型 2025' : 'CET4 四级翻译技巧 常用表达 真题';
+  fetch('https://api.unsplash.com/search/photos?query=english&per_page=1', { signal: AbortSignal.timeout(3000) })
+    .then(function() {})
+    .catch(function() {});
+  var searchDiv = document.getElementById('writ-search-' + secId);
+  if (searchDiv) {
+    if (isWriting) {
+      searchDiv.innerHTML = '<div style="background:#fff;border-radius:12px;padding:14px;border:1px solid #E8ECF0;">'
+        + '<div style="font-weight:600;margin-bottom:8px;">📝 四级作文万能模板</div>'
+        + '<div style="font-size:13px;line-height:1.8;color:var(--color-text);">'
+        + '<p><b>开头段：</b><br>'
+        + '• 现象引入：<em>Recently, the issue of ___ has aroused wide concern among the public.</em><br>'
+        + '• 观点对立：<em>When it comes to ___, people\'s opinions vary from person to person.</em><br>'
+        + '• 图表描述：<em>As is vividly shown in the chart, ___ has experienced a dramatic change.</em></p>'
+        + '<p><b>主体段：</b><br>'
+        + '•  Firstly, it is undeniable that ___. For instance, ___.<br>'
+        + '•  Moreover, ___ plays a significant role in ___. According to a recent study, ___.<br>'
+        + '•  Last but not least, we should also take ___ into consideration.</p>'
+        + '<p><b>结尾段：</b><br>'
+        + '• 总结观点：<em>Taking all these factors into account, we may reasonably conclude that ___.</em><br>'
+        + '• 提出建议：<em>It is high time that we took effective measures to ___.</em><br>'
+        + '• 展望未来：<em>Only in this way can we expect a brighter future.</em></p>'
+        + '<div style="margin-top:8px;padding-top:8px;border-top:1px solid #E8ECF0;font-size:12px;color:var(--color-text-tertiary);">💡 提示：以上模板来自四级考试常用表达，可根据具体题目灵活套用</div>'
+        + '</div></div>';
+    } else {
+      searchDiv.innerHTML = '<div style="background:#fff;border-radius:12px;padding:14px;border:1px solid #E8ECF0;">'
+        + '<div style="font-weight:600;margin-bottom:8px;">🌐 四级翻译常用技巧</div>'
+        + '<div style="font-size:13px;line-height:1.8;color:var(--color-text);">'
+        + '<p><b>步骤一：通读原文，确定时态</b><br>'
+        + '• 记叙文常用一般过去时<br>'
+        + '• 说明文/议论文常用一般现在时</p>'
+        + '<p><b>步骤二：拆分句子，化整为零</b><br>'
+        + '• 长句拆分为 2-3 个短句翻译<br>'
+        + '• 确定每个短句的主谓宾结构</p>'
+        + '<p><b>步骤三：选择词汇，组织语言</b><br>'
+        + '• 常用四字格：<em>as is known to all, it is widely believed that</em><br>'
+        + '• 连接词：<em>not only...but also, although, therefore, in addition</em></p>'
+        + '<p><b>步骤四：检查校对</b><br>'
+        + '• 主谓一致、时态一致、单复数<br>'
+        + '• 冠词使用、介词搭配、拼写错误</p>'
+        + '<div style="margin-top:8px;padding-top:8px;border-top:1px solid #E8ECF0;font-size:12px;color:var(--color-text-tertiary);">💡 提示：以上为四级翻译通用步骤，建议逐句翻译并通读全文检查</div>'
+        + '</div></div>';
+    }
+  }
+}
+
+function showWritingGuide(type) {
+  var overlay = document.getElementById('word-lookup-overlay');
+  document.getElementById('word-lookup-word').textContent = type === 'writing' ? '📝 作文模板库' : '🌐 翻译技巧库';
+  document.getElementById('word-lookup-phonetic').textContent = '';
+  document.getElementById('wl-audio-btn').style.display = 'none';
+  document.getElementById('wl-chinese').style.display = 'none';
+  document.getElementById('wl-context').style.display = 'none';
+  document.getElementById('word-lookup-add-btn').style.display = 'none';
+  document.querySelector('#word-lookup-overlay .wl-cat-btn') && (document.querySelector('#word-lookup-overlay .wl-cat-btn').parentNode.parentNode.style.display = 'none');
+
+  var defs = document.getElementById('word-lookup-defs');
+  if (type === 'writing') {
+    defs.innerHTML = '<div style="font-size:14px;line-height:1.9;">'
+      + '<h5 style="font-size:15px;font-weight:600;color:var(--color-oasis);margin:16px 0 8px;">📋 四段式结构</h5>'
+      + '<div style="background:rgba(39,163,163,0.04);padding:12px 14px;border-radius:10px;margin:8px 0;">'
+      + '<b>第一段：引言</b>（2-3句）<br>'
+      + '· 引入话题 + 表明立场<br>'
+      + '<span style="color:var(--color-text-tertiary);font-size:13px;">例：There is a heated debate about ___. From my perspective, ___.</span></div>'
+      + '<div style="background:rgba(72,187,120,0.04);padding:12px 14px;border-radius:10px;margin:8px 0;">'
+      + '<b>第二段：论点一</b>（3-4句）<br>'
+      + '· 主题句 + 解释 + 例子<br>'
+      + '<span style="color:var(--color-text-tertiary);font-size:13px;">例：First and foremost, it is widely accepted that ___. For instance, ___.</span></div>'
+      + '<div style="background:rgba(72,187,120,0.04);padding:12px 14px;border-radius:10px;margin:8px 0;">'
+      + '<b>第三段：论点二</b>（3-4句）<br>'
+      + '· 主题句 + 解释 + 对比/递进<br>'
+      + '<span style="color:var(--color-text-tertiary);font-size:13px;">例：Moreover, ___ also plays a crucial role. Without it, ___.</span></div>'
+      + '<div style="background:rgba(39,163,163,0.04);padding:12px 14px;border-radius:10px;margin:8px 0;">'
+      + '<b>第四段：结论</b>（2-3句）<br>'
+      + '· 总结观点 + 建议/展望<br>'
+      + '<span style="color:var(--color-text-tertiary);font-size:13px;">例：In conclusion, ___. It is advisable that we ___.</span></div>'
+      + '<h5 style="font-size:15px;font-weight:600;color:var(--color-oasis);margin:16px 0 8px;">🔑 万能句型</h5>'
+      + '<div style="padding:4px 0;"><b>引出观点：</b><br>'
+      + '· It is universally acknowledged that...<br>'
+      + '· No one can deny that...<br>'
+      + '· There is no doubt that...</div>'
+      + '<div style="padding:4px 0;margin-top:8px;"><b>表示原因：</b><br>'
+      + '· The reasons for this phenomenon are as follows.<br>'
+      + '· This can be attributed to the fact that...</div>'
+      + '<div style="padding:4px 0;margin-top:8px;"><b>表示转折：</b><br>'
+      + '· However, every coin has two sides.<br>'
+      + '· On the contrary, some people argue that...</div>'
+      + '<div style="padding:4px 0;margin-top:8px;"><b>总结归纳：</b><br>'
+      + '· From what has been discussed above, we may safely draw the conclusion that...<br>'
+      + '· Taking all these factors into account, we may reasonably conclude that...</div>'
+      + '<div style="margin-top:16px;padding:12px;background:#FFF8E8;border-radius:10px;font-size:13px;color:#856404;">'
+      + '💡 <b>复盘步骤：</b>① 审题圈关键词 → ② 列提纲（观点+理由） → ③ 写草稿 → ④ 检查语法拼写 → ⑤ 誊写</div>'
+      + '</div>';
+  } else {
+    defs.innerHTML = '<div style="font-size:14px;line-height:1.9;">'
+      + '<h5 style="font-size:15px;font-weight:600;color:var(--color-oasis);margin:16px 0 8px;">📖 翻译四步法</h5>'
+      + '<div style="padding:8px 12px;background:rgba(39,163,163,0.04);border-radius:10px;margin:8px 0;">'
+      + '<b>Step 1：通读全文</b><br>'
+      + '· 理解全文意思，确定时态基调<br>'
+      + '· 标记难句和关键词</div>'
+      + '<div style="padding:8px 12px;background:rgba(72,187,120,0.04);border-radius:10px;margin:8px 0;">'
+      + '<b>Step 2：逐句翻译</b><br>'
+      + '· 确定主语和谓语<br>'
+      + '· 选择恰当的连接词<br>'
+      + '· 注意中英文语序差异</div>'
+      + '<div style="padding:8px 12px;background:rgba(159,122,234,0.04);border-radius:10px;margin:8px 0;">'
+      + '<b>Step 3：润色提升</b><br>'
+      + '· 替换低级词汇为高级表达<br>'
+      + '· 合并简单句为复合句<br>'
+      + '· 检查是否有更好的译法</div>'
+      + '<div style="padding:8px 12px;background:#FFF8E8;border-radius:10px;margin:8px 0;">'
+      + '<b>Step 4：通读检查</b><br>'
+      + '· 检查时态和主谓一致<br>'
+      + '· 检查冠词和介词<br>'
+      + '· 检查拼写和标点</div>'
+      + '<h5 style="font-size:15px;font-weight:600;color:var(--color-oasis);margin:16px 0 8px;">🔑 常见表达</h5>'
+      + '<div style="padding:4px 0;">' + escapeHtml('· 越来越：') + 'more and more / increasingly<br>'
+      + '· 发挥重要作用：play a significant role in<br>'
+      + '· 因此：therefore / as a result / consequently<br>'
+      + '· 不仅...而且...：not only...but also...<br>'
+      + '· 在...的帮助下：with the help of<br>'
+      + '· 把...归因于：attribute...to...<br>'
+      + '· 与...相比：compared with / in comparison with</div>'
+      + '<div style="margin-top:16px;padding:12px;background:#FFF8E8;border-radius:10px;font-size:13px;color:#856404;">'
+      + '💡 <b>复盘步骤：</b>① 对比参考答案 → ② 标记自己的错误和不足 → ③ 积累不会的表达 → ④ 重译一遍</div>'
+      + '</div>';
+  }
+  overlay.classList.add('show');
+}
+
+var clickBlank = function(paperId, sectionIdx, blankNum) {
+  var paper = state.papers.find(function(p) { return p.id === paperId; });
+  if (!paper) return;
+  var section = paper.sections[sectionIdx];
+  if (!section) return;
+  var sb = window._selBlank;
+  if (sb && sb.paperId === paperId && sb.sectionIdx === sectionIdx && sb.blankNum === blankNum) {
+    window._selBlank = null;
+    renderPaperInExam(paper);
+    return;
+  }
+  if (section.blankAnswers && section.blankAnswers[blankNum]) {
+    delete section.blankAnswers[blankNum];
+    saveState();
+    window._selBlank = null;
+    renderPaperInExam(paper);
+    return;
+  }
+  window._selBlank = { paperId: paperId, sectionIdx: sectionIdx, blankNum: blankNum };
+  renderPaperInExam(paper);
+};
+
+var clickWB = function(paperId, sectionIdx, key) {
+  var sb = window._selBlank;
+  if (!sb || sb.paperId !== paperId || sb.sectionIdx !== sectionIdx) {
+    showToast('\u8bf7\u5148\u70b9\u51fb\u4e00\u4e2a\u7a7a\u767d\u683c');
+    return;
+  }
+  var paper = state.papers.find(function(p) { return p.id === paperId; });
+  if (!paper) return;
+  var section = paper.sections[sectionIdx];
+  if (!section) return;
+  if (section.blankAnswers) {
+    for (var k in section.blankAnswers) {
+      if (section.blankAnswers[k].key === key) {
+        showToast('\u8be5\u5355\u8bcd\u5df2\u88ab\u4f7f\u7528');
+        return;
+      }
+    }
+  }
+  var wbEntry = null;
+  if (section.wordBank) {
+    for (var wi = 0; wi < section.wordBank.length; wi++) {
+      if (section.wordBank[wi].key === key) { wbEntry = section.wordBank[wi]; break; }
+    }
+  }
+  if (!wbEntry) return;
+  if (!section.blankAnswers) section.blankAnswers = {};
+  section.blankAnswers[String(sb.blankNum)] = { key: key, word: wbEntry.word };
+  saveState();
+  window._selBlank = null;
+  renderPaperInExam(paper);
+};
+
+function endExam(paperId) {
+  state.examTimer.running = false;
+  if (examInterval) clearInterval(examInterval);
+  const display = document.getElementById('exam-timer-display');
+  if (display) display.classList.add('hidden');
+  const paper = state.papers.find(p => p.id === paperId);
+  if (paper) {
+    paper.status = 'completed';
+    paper.timeSpent = state.examTimer.elapsed;
+    let correct = 0, total = 0;
+    paper.sections.forEach(function(s) {
+      s.questions.forEach(function(q) {
+        total++;
+        if (q.userSelected && q.answer && q.userSelected === q.answer) correct++;
+        else if (q.userSelected && !q.answer && paper.answerKey) {
+          var keyMatch = paper.answerKey.match(new RegExp('(?:^|\\n)\\s*' + q.id + '\\s+([A-Z])'));
+          if (keyMatch && q.userSelected === keyMatch[1]) correct++;
+          else if (!keyMatch) {
+            var allKeys = paper.answerKey.match(/(\d+)\s+([A-Z])/g);
+            if (allKeys) {
+              for (var ki = 0; ki < allKeys.length; ki++) {
+                var parts = allKeys[ki].match(/(\d+)\s+([A-Z])/);
+                if (parts && parseInt(parts[1]) === q.id) {
+                  if (q.userSelected === parts[2]) correct++;
+                  break;
+                }
+              }
+            }
+          }
+        }
+      });
+      if (s.blankAnswers && s.blankNums && paper.answerKey) {
+        var keyMatch = paper.answerKey.match(/(?:Part\s+III[^]*?Reading Comprehension[^]*?)((?:\d+\s+)+)\n\s*((?:[A-Z]\s+)+)/i);
+        if (keyMatch) {
+          var nums = keyMatch[1].trim().split(/\s+/).map(Number);
+          var keys = keyMatch[2].trim().split(/\s+/);
+          nums.forEach(function(n, i) {
+            if (s.blankNums.indexOf(n) === -1) return;
+            total++;
+            if (s.blankAnswers[String(n)] && keys[i] && s.blankAnswers[String(n)].key === keys[i]) correct++;
+          });
+        }
+      }
+    });
+    paper.score = total > 0 ? Math.round(correct/total*100) : 0;
+    if (!state.examHistory) state.examHistory = [];
+    state.examHistory.unshift({ paperId: paper.id, title: paper.title, date: Date.now(), score: paper.score, correct: correct, total: total, timeSpent: state.examTimer.elapsed, wordCount: state.words.length });
+    if (state.examHistory.length > 100) state.examHistory.length = 100;
+    saveState();
+  }
+  renderExam();
+  showToast('已交卷！');
+}
+
+// ============================================================
+// Lazy init - incremental paper parsing
+// ============================================================
+function isGarbledText(text) {
+  if (!text || text.length < 100) return true;
+  var sample = text.slice(0, 3000);
+  var bad = 0, total = 0;
+  for (var i = 0; i < sample.length; i++) {
+    var c = sample.charCodeAt(i);
+    total++;
+    if (c === 0xFFFD) { bad += 3; continue; }
+    if (c < 32 && c !== 9 && c !== 10 && c !== 13) { bad += 2; continue; }
+    if (c > 126 && c < 0x4E00 && c !== 0x2013 && c !== 0x2014 && c !== 0x2018 && c !== 0x2019 && c !== 0x201C && c !== 0x201D && c !== 0x00A0) { bad++; }
+  }
+  return bad > 150 || (bad > total * 0.05);
+}
+
+function cleanText(str) {
+  if (!str) return '';
+  var out = '';
+  for (var i = 0; i < str.length; i++) {
+    var c = str.charCodeAt(i);
+    if (c === 0xFFFD) continue;
+    if (c < 32 && c !== 9 && c !== 10 && c !== 13) continue;
+    out += str[i];
+  }
+  return out;
+}
+
+function lazyInitPapers() {
+  ensureExamData(function() {
+    while (state.papers.length < EXAM_DATA.length) {
+      const exam = EXAM_DATA[state.papers.length];
+      if (isGarbledText(exam.text)) {
+        state.papers.push({ id: 'paper_skip_'+state.papers.length, title: exam.title, sections: [], status: 'unstarted', skip: true });
+        continue;
+      }
+      const paper = parsePaperText(exam.title, exam.text);
+      if (exam.keys) paper.answerKey = exam.keys;
+      state.papers.push(paper);
+    }
+    saveState();
+    renderExam();
+  });
+}
+
+function extractOptionsFromLine(line) {
+  var opts = [];
+  var parts = line.split(/\s+(?=[A-D][.)、])/);
+  for (var k = 0; k < parts.length; k++) {
+    var m = parts[k].match(/^([A-D])[.)、]\s*(.*)/);
+    if (m) opts.push({ key: m[1], text: m[2].trim() });
+  }
+  return opts;
+}
+
+function parsePaperText(title, rawText) {
+  const lines = rawText.split('\n').filter(l => l.trim());
+  const sections = [];
+  let currentSection = null, currentQuestions = [], bodyParts = [];
+  function flushSection() {
+    if (currentSection) {
+      var body = bodyParts.join('\n').trim();
+      var wordBank = null, blankNums = null, paraLabels = null;
+      if (/^Section\s+A\b/i.test(currentSection.title)) {
+        var cleanedLines = [], lines = body.split('\n');
+        for (var b = 0; b < lines.length; b++) {
+          var bl = lines[b].trim();
+          if (!bl) continue;
+          var entries = [], wbRegex = /([A-O])[.)、]\s*([a-zA-Z'-]+)/g, m;
+          while ((m = wbRegex.exec(bl)) !== null) entries.push({ key: m[1], word: m[2] });
+          if (entries.length > 0 && bl.replace(/[A-O][.)、]\s*[a-zA-Z'-]+\s*/g, '').trim().length < 3) {
+            if (!wordBank) wordBank = [];
+            wordBank = wordBank.concat(entries);
+          } else { cleanedLines.push(bl); }
+        }
+        body = cleanedLines.join('\n');
+        var blankRegex = /_{3,}(\d+)_{3,}/g;
+        while ((m = blankRegex.exec(body)) !== null) { if (!blankNums) blankNums = []; blankNums.push(parseInt(m[1])); }
+      }
+      if (/^Section\s+B\b/i.test(currentSection.title)) {
+        paraLabels = [];
+        var paraSet = {};
+        body.replace(/\[([A-Z])\]/g, function(m, l) { paraSet[l] = 1; });
+        body.replace(/[（(]([A-Z])[）)]/g, function(m, l) { paraSet[l] = 1; });
+        body.split('\n').forEach(function(bl) {
+          var pm = bl.trim().match(/^([A-Z])[.)、\s]/);
+          if (pm && pm[1] !== 'I' && pm[1] !== 'V') paraSet[pm[1]] = 1;
+        });
+        paraLabels = Object.keys(paraSet).sort();
+        if (paraLabels.length === 0 && currentQuestions.length >= 5) {
+          for (var ci = 0; ci < Math.min(15, currentQuestions.length + 3); ci++) paraLabels.push(String.fromCharCode(65 + ci));
+        }
+        if (paraLabels.length > 0) {
+          currentQuestions.forEach(function(q) {
+            q.options = paraLabels.map(function(l) { return { key: l, text: l }; });
+          });
+        }
+      }
+      sections.push({ type: currentSection.type, title: currentSection.title, body: body, questions: [...currentQuestions], wordBank: wordBank, blankNums: blankNums, blankAnswers: blankNums ? {} : null, paraLabels: paraLabels });
+      currentQuestions = []; bodyParts = [];
+    }
+  }
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    const sm = sectionMatch(line);
+    if (sm) { flushSection(); currentSection = { type: sm, title: line }; continue; }
+    if (currentSection) {
+      const qm = questionMatch(line);
+      if (qm) {
+        var qtext = line;
+        var origNum = parseInt(line.match(/^(\d+)/)) || currentQuestions.length+1;
+        var opts = [];
+        var inlineOpts = extractOptionsFromLine(line);
+        if (inlineOpts.length > 0) {
+          opts = inlineOpts;
+          qtext = line.replace(/^\d+[.、\)\s]*/, '').replace(/\s*[A-D][.)、]\s*.*$/, '').trim();
+        } else {
+          qtext = line.replace(/^\d+[.、\)\s]*/, '').trim();
+        }
+        const q = { id: origNum, text: qtext, options: [], answer: '', userSelected: '' };
+        if (opts.length > 0) q.options = opts;
+        for (let j = i+1; j < Math.min(i+5, lines.length) && q.options.length < 4; j++) {
+          var nextLine = lines[j].trim();
+          if (!nextLine) continue;
+          var nextOpts = extractOptionsFromLine(nextLine);
+          if (nextOpts.length > 0) {
+            nextOpts.forEach(function(o) {
+              if (q.options.length < 4 && !q.options.some(function(ex) { return ex.key === o.key; })) {
+                q.options.push(o);
+              }
+            });
+            i = j;
+          } else break;
+        }
+        q.options.sort(function(a,b) { return a.key.localeCompare(b.key); });
+        currentQuestions.push(q);
+      } else { bodyParts.push(line); }
+    }
+  }
+  flushSection();
+  return { id: 'paper_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), title, sections, status: 'unstarted', createdAt: Date.now(), score: null, timeSpent: 0 };
+}
+
+function sectionMatch(line) {
+  if (/^Part\s+(I{1,3}|IV|V|VI?)\b/i.test(line)) return 'part';
+  if (/^Section\s+[A-Z]\b/i.test(line)) return 'section';
+  if (/^Passage\s+(One|Two)\b/i.test(line)) return 'passage';
+  return null;
+}
+function questionMatch(line) { return /^\d+[.、\)\s]/.test(line) && line.length < 400; }
+
+// ============================================================
+// Exam Browse (真题浏览) with per-question pagination
+// ============================================================
+let ebPages = [], ebCurrentPage = 0, ebExamIdx = -1;
+
+function renderExambrowse() {
+  const container = document.getElementById('exambrowse-container');
+  ensureExamData(function() {
+    const years = [...new Set(EXAM_DATA.map(e => e.year))].sort();
+    let html = '<div class="card-xl p-5 mb-4"><h3 style="font-size:16px;font-weight:600;margin-bottom:12px;">选择年份</h3><div style="display:flex;flex-wrap:wrap;gap:8px;" id="eb-year-filter">';
+    years.forEach(y => html += '<button class="eb-year-btn" data-year="'+y+'" onclick="filterEBPapers(\''+y+'\')" style="padding:6px 16px;border-radius:20px;border:1px solid var(--color-border);background:var(--color-card);cursor:pointer;font-size:14px;">'+y+'</button>');
+    html += '</div></div><div id="eb-paper-list" class="space-y-3"></div>';
+    container.innerHTML = html;
+    filterEBPapers(years[0]);
+  });
+}
+
+function filterEBPapers(year) {
+  document.querySelectorAll('.eb-year-btn').forEach(b => {
+    b.style.background = b.dataset.year === year ? 'var(--color-oasis)' : 'var(--color-card)';
+    b.style.color = b.dataset.year === year ? '#fff' : 'var(--color-text)';
+    b.style.borderColor = b.dataset.year === year ? 'transparent' : 'var(--color-border)';
+  });
+  const papers = EXAM_DATA.filter(function(e) { return e.year === year && !isGarbledText(e.text); });
+  const list = document.getElementById('eb-paper-list');
+  list.innerHTML = papers.map(function(p) {
+    const idx = EXAM_DATA.indexOf(p);
+    return '<div class="card-xl p-4 cursor-pointer" onclick="openEBPaper('+idx+')"><div class="flex items-center justify-between"><div><div style="font-weight:600;font-size:14px;">'+p.title+'</div><div style="font-size:11px;color:var(--color-text-tertiary);margin-top:2px;">'+p.file+'</div></div><div style="color:var(--color-oasis);font-size:13px;">阅读 →</div></div></div>';
+  }).join('');
+}
+
+function openEBPaper(idx) {
+  ebExamIdx = idx;
+  const exam = EXAM_DATA[idx];
+  ebPages = parseEBPages(exam.text);
+  ebCurrentPage = 0;
+  document.getElementById('eb-reading-title').textContent = exam.title;
+  const overlay = document.getElementById('exambrowse-reading-mode');
+  overlay.classList.add('active');
+  var audioArea = document.getElementById('eb-audio-area');
+  var audioEl = document.getElementById('eb-native-audio');
+  audioEl.onerror = function() { audioArea.style.display = 'none'; };
+  if (exam.file) {
+    var mp3 = exam.file.replace(/\.pdf$/i, '.mp3');
+    var src = 'CET-4 真题/cet4_' + exam.year + '/' + mp3;
+    audioEl.src = src;
+    audioEl.load();
+    audioArea.style.display = 'flex';
+  } else {
+    audioArea.style.display = 'none';
+    audioEl.src = '';
+  }
+  renderEBPage(0);
+  document.addEventListener('keydown', ebKeyHandler);
+}
+
+function ebKeyHandler(e) {
+  if (e.key === 'ArrowRight') goEBPage(1);
+  else if (e.key === 'ArrowLeft') goEBPage(-1);
+  else if (e.key === 'Escape') exitExambrowseReading();
+}
+
+function exitExambrowseReading() {
+  const overlay = document.getElementById('exambrowse-reading-mode');
+  overlay.classList.remove('active');
+  var a = document.getElementById('eb-native-audio');
+  if (a) { a.pause(); a.src = ''; }
+  document.getElementById('eb-audio-area').style.display = 'none';
+  document.removeEventListener('keydown', ebKeyHandler);
+}
+
+function parseEBPages(text) {
+  const parts = text.split(/(?=Part\s+(?:I{1,3}|IV|V|VI?)\b)/i);
+  const pages = [];
+  parts.forEach(p => {
+    const trimmed = p.trim();
+    if (!trimmed) return;
+    const partMatch = trimmed.match(/^(Part\s+\S+)\s+(.+)/i);
+    const partTitle = partMatch ? partMatch[1] + ' ' + partMatch[2].split('\n')[0] : 'Part';
+    const partBody = partMatch ? trimmed.slice(partMatch[0].length).trim() : trimmed;
+    const sections = partBody.split(/(?=Section\s+[A-Z]\b)/i);
+    sections.forEach(s => {
+      const st = s.trim();
+      if (!st) return;
+      const secMatch = st.match(/^(Section\s+[A-Z])\s+(.+)/i);
+      const secTitle = secMatch ? secMatch[1] + ' ' + secMatch[2].split('\n')[0] : '';
+      const secBody = secMatch ? st.slice(secMatch[0].length).trim() : st;
+      const isListening = /Part\s+II/i.test(partTitle);
+      const groups = secBody.split(/\n\n+/);
+      let groupBuffer = [], groupText = '';
+      groups.forEach(g => {
+        const hasQuestions = /^\d+[.、\)\s]/.test(g.trim());
+        if (hasQuestions && groupText) {
+          pages.push({ part: partTitle, section: secTitle, content: groupText.trim(), audio: isListening, type: 'questions' });
+          groupText = g.trim();
+        } else {
+          groupText += (groupText ? '\n\n' : '') + g.trim();
+        }
+      });
+      if (groupText) pages.push({ part: partTitle, section: secTitle, content: groupText.trim(), audio: isListening, type: 'questions' });
+    });
+  });
+  if (!pages.length) pages.push({ part: '', section: '', content: text, audio: false, type: 'text' });
+  return pages;
+}
+
+function goEBPage(delta) {
+  const newPage = ebCurrentPage + delta;
+  if (newPage < 0 || newPage >= ebPages.length) return;
+  ebCurrentPage = newPage;
+  renderEBPage(newPage);
+}
+
+function renderEBPage(idx) {
+  const page = ebPages[idx];
+  document.getElementById('eb-page-indicator').textContent = '第 ' + (idx+1) + ' / ' + ebPages.length + ' 页';
+  document.getElementById('eb-prev-btn').style.opacity = idx === 0 ? '0.3' : '1';
+  document.getElementById('eb-next-btn').style.opacity = idx === ebPages.length-1 ? '0.3' : '1';
+  const inner = document.getElementById('eb-content-inner');
+
+  let html = '';
+  if (page.part) html += '<div class="section-title">' + page.part + '</div>';
+  if (page.section) html += '<div style="font-weight:600;font-size:14px;margin-bottom:8px;color:var(--color-text-secondary);">' + page.section + '</div>';
+
+  const lines = page.content.split('\n');
+  const questionBlocks = [];
+  let currentBlock = [];
+  lines.forEach(l => {
+    if (/^\d+[.、\)\s]/.test(l.trim()) && currentBlock.length > 0) {
+      questionBlocks.push(currentBlock.join('\n'));
+      currentBlock = [l];
+    } else {
+      currentBlock.push(l);
+    }
+  });
+  if (currentBlock.length > 0) questionBlocks.push(currentBlock.join('\n'));
+
+  if (questionBlocks.length > 1) {
+    var startIdx = 0;
+    if (/^\d+[.、\)\s]/.test(questionBlocks[0].trim())) {
+      startIdx = 0;
+    } else {
+      html += '<div class="direction-text" style="white-space:pre-wrap;">' + escapeHtml(cleanText(questionBlocks[0])) + '</div>';
+      startIdx = 1;
+    }
+    for (let i = startIdx; i < questionBlocks.length; i++) {
+      html += '<div class="question-group">' + formatQuestionBlock(questionBlocks[i]) + '</div>';
+    }
+  } else {
+    html += '<div style="white-space:pre-wrap;font-size:14px;line-height:1.9;">' + escapeHtml(cleanText(page.content)) + '</div>';
+  }
+
+  inner.innerHTML = html;
+  setupWordClickHandler(inner);
+}
+
+function formatQuestionBlock(text) {
+  const lines = text.split('\n');
+  let html = '';
+  let questionText = '';
+  let options = [];
+  lines.forEach(function(l) {
+    l = l.trim();
+    if (!l) return;
+    var qm = l.match(/^(\d+[.、\)\s])(.*)/);
+    var opts = [];
+    if (qm) {
+      var rest = qm[2];
+      var inlineOpts = extractOptionsFromLine(rest);
+      if (inlineOpts.length > 0) {
+        opts = inlineOpts;
+        rest = '';
+      }
+      if (questionText && options.length > 0) {
+        html += '<div class="question-text">' + escapeHtml(cleanText(questionText)) + '</div>';
+        options.sort(function(a,b) { return a.key.localeCompare(b.key); });
+        options.forEach(function(o) { html += '<div class="option-btn"><span class="option-letter">' + o.key + '</span><span class="option-text">' + escapeHtml(cleanText(o.text)) + '</span></div>'; });
+        options = [];
+      }
+      questionText = qm[1] + ' ' + rest.trim();
+      opts.forEach(function(o) { if (options.length < 4 && !options.some(function(ex) { return ex.key === o.key; })) options.push(o); });
+    } else {
+      inlineOpts = extractOptionsFromLine(l);
+      if (inlineOpts.length > 0) {
+        inlineOpts.forEach(function(o) { if (options.length < 4 && !options.some(function(ex) { return ex.key === o.key; })) options.push(o); });
+      } else {
+        if (questionText) questionText += ' ' + l;
+      }
+    }
+  });
+  if (questionText) html += '<div class="question-text">' + escapeHtml(cleanText(questionText)) + '</div>';
+  options.sort(function(a,b) { return a.key.localeCompare(b.key); });
+  options.forEach(function(o) { html += '<div class="option-btn"><span class="option-letter">' + o.key + '</span><span class="option-text">' + escapeHtml(cleanText(o.text)) + '</span></div>'; });
+  return html;
+}
+
+function escapeHtml(t) {
+  const d = document.createElement('div');
+  d.textContent = t;
+  return d.innerHTML;
+}
+
+
+// ============================================================
+// Vocab (生词本)
+// ============================================================
+function parseArticle() {
+  const text = document.getElementById('article-input').value.trim();
+  if (!text) { showToast('请先粘贴文章'); return; }
+  const words = text.toLowerCase().replace(/[^a-z\s'-]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && w.length <= 20);
+  const unique = [...new Set(words)];
+  let added = 0;
+  unique.forEach(w => {
+    if (!state.words.some(v => v.text === w)) {
+      state.words.unshift({ id: genId(), text: w, category: '', context: '', timestamp: Date.now(), reviewCount: 0 });
+      added++;
+    }
+  });
+  saveState();
+  renderVocab();
+  showToast('解析完成，新增 ' + added + ' 个单词');
+}
+
+function renderVocab() {
+  const container = document.getElementById('word-list');
+  const badge = document.getElementById('word-count-badge');
+  const words = state.words;
+  badge.textContent = words.length + ' 个单词';
+  if (!words.length) {
+    container.innerHTML = '<span style="color:var(--color-text-tertiary);font-size:14px;">暂无单词，先粘贴文章解析吧</span>';
+    document.getElementById('stat-L').textContent = '0';
+    document.getElementById('stat-R').textContent = '0';
+    document.getElementById('stat-W').textContent = '0';
+    return;
+  }
+  let catL = 0, catR = 0, catW = 0;
+  let html = '';
+  words.forEach(w => {
+    const cat = w.category || '';
+    if (cat === 'L') catL++;
+    else if (cat === 'R') catR++;
+    else if (cat === 'W') catW++;
+    const cls = cat ? 'word-tag-' + cat : 'word-tag-none';
+    html += '<span class="word-tag ' + cls + '" data-id="' + w.id + '" data-cat="' + cat + '">' + escapeHtml(w.text) + '</span>';
+  });
+  container.innerHTML = html;
+  document.getElementById('stat-L').textContent = catL;
+  document.getElementById('stat-R').textContent = catR;
+  document.getElementById('stat-W').textContent = catW;
+  container.querySelectorAll('.word-tag').forEach(function(el) {
+    el.addEventListener('click', function() {
+      const cycle = { '': 'L', L: 'R', R: 'W', W: '' };
+      const newCat = cycle[el.dataset.cat] || 'L';
+      const word = state.words.find(function(w) { return w.id === el.dataset.id; });
+      if (word) { word.category = newCat; saveState(); renderVocab(); renderDashboard(); }
+    });
+  });
+}
+
+// ============================================================
+// Word Lookup (点击查词)
+// ============================================================
+let lookupWordText = '';
+let lookupWordDef = '';
+let lookupChineseHtml = '';
+let lookupPhonetic = '';
+let lookupExamples = [];
+let lookupAudioUrl = '';
+let lookupSelectedCat = 'R';
+
+function lookupWord(word, contextText) {
+  word = word.toLowerCase().replace(/[^a-z'-]/g, '');
+  if (!word || word.length < 2) return;
+  lookupWordText = word;
+  lookupWordDef = '';
+  lookupChineseHtml = '';
+  lookupPhonetic = '';
+  lookupExamples = [];
+  lookupAudioUrl = '';
+  lookupSelectedCat = 'R';
+  document.getElementById('wl-cat-r').className = 'wl-cat-btn active-cat-r';
+  document.getElementById('wl-cat-l').className = 'wl-cat-btn';
+  document.getElementById('wl-cat-w').className = 'wl-cat-btn';
+  document.getElementById('wl-audio-btn').style.display = 'none';
+  document.getElementById('wl-chinese').style.display = 'none';
+  document.getElementById('wl-chinese').innerHTML = '';
+  document.getElementById('wl-context').style.display = 'none';
+  document.getElementById('wl-context').innerHTML = '';
+
+  const overlay = document.getElementById('word-lookup-overlay');
+  document.getElementById('word-lookup-word').textContent = word;
+  document.getElementById('word-lookup-phonetic').textContent = '';
+  document.getElementById('word-lookup-defs').innerHTML = '<div class="word-lookup-loading">查词中...</div>';
+  var addBtn = document.getElementById('word-lookup-add-btn');
+  if (state.words.some(function(w) { return w.text === word; })) {
+    addBtn.textContent = '已在生词本中';
+    addBtn.className = 'word-lookup-add-btn word-lookup-added';
+    addBtn.disabled = true;
+  } else {
+    addBtn.textContent = '加入生词本';
+    addBtn.className = 'word-lookup-add-btn';
+    addBtn.style.background = 'var(--color-oasis)';
+    addBtn.style.color = '#fff';
+    addBtn.disabled = false;
+  }
+  if (contextText) {
+    var ctxEl = document.getElementById('wl-context');
+    ctxEl.innerHTML = '<span style="font-weight:600;">原文：</span>' + escapeHtml(contextText);
+    ctxEl.style.display = 'block';
+  }
+  overlay.classList.add('show');
+
+  fetchChineseTranslation(word);
+  fetch('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(word))
+    .then(function(r) { if (!r.ok) throw new Error('Not found'); return r.json(); })
+    .then(function(data) {
+      if (!data || !data[0]) throw new Error('No data');
+      var d = data[0];
+      lookupPhonetic = d.phonetic || (d.phonetics && d.phonetics[0] && d.phonetics[0].text) || '';
+      document.getElementById('word-lookup-phonetic').textContent = lookupPhonetic;
+      if (d.phonetics && d.phonetics[0] && d.phonetics[0].audio) {
+        lookupAudioUrl = d.phonetics[0].audio;
+        document.getElementById('wl-audio-btn').style.display = 'inline-flex';
+      }
+      var html = '';
+      lookupExamples = [];
+      (d.meanings || []).forEach(function(m) {
+        (m.definitions || []).forEach(function(def, i) {
+          if (i >= 2) return;
+          html += '<div class="word-lookup-meaning">';
+          html += '<div class="word-lookup-pos">' + escapeHtml(m.partOfSpeech || '') + '</div>';
+          html += '<div class="word-lookup-def">' + escapeHtml(def.definition || '') + '</div>';
+          if (def.example) {
+            html += '<div class="word-lookup-example">' + escapeHtml(def.example) + '</div>';
+            lookupExamples.push(def.example);
+          }
+          html += '</div>';
+        });
+      });
+      if (!html) html = '<div style="text-align:center;padding:20px;color:var(--color-text-tertiary);font-size:14px;">未找到详细释义</div>';
+      document.getElementById('word-lookup-defs').innerHTML = html;
+      if (d.meanings && d.meanings[0] && d.meanings[0].definitions && d.meanings[0].definitions[0]) {
+        lookupWordDef = d.meanings[0].definitions[0].definition || '';
+      }
+    })
+    .catch(function() {
+      document.getElementById('word-lookup-defs').innerHTML = '<div style="text-align:center;padding:20px;color:var(--color-text-tertiary);font-size:14px;">未找到该词的释义</div>';
+    });
+}
+
+function selectWLCat(cat) {
+  lookupSelectedCat = cat;
+  document.getElementById('wl-cat-r').className = 'wl-cat-btn' + (cat === 'R' ? ' active-cat-r' : '');
+  document.getElementById('wl-cat-l').className = 'wl-cat-btn' + (cat === 'L' ? ' active-cat-l' : '');
+  document.getElementById('wl-cat-w').className = 'wl-cat-btn' + (cat === 'W' ? ' active-cat-w' : '');
+}
+
+function playWLAudio() {
+  if (!lookupAudioUrl) return;
+  var a = new Audio(lookupAudioUrl);
+  a.play().catch(function() {});
+}
+
+function addWordFromLookup() {
+  var word = lookupWordText;
+  if (!word || state.words.some(function(w) { return w.text === word; })) return;
+  state.words.unshift({
+    id: genId(),
+    text: word,
+    category: lookupSelectedCat,
+    context: lookupWordDef || '',
+    phonetic: lookupPhonetic || '',
+    chinese: lookupChineseHtml.replace(/<[^>]+>/g, '').trim() || '',
+    examples: lookupExamples.slice(0, 2),
+    audioUrl: lookupAudioUrl || '',
+    timestamp: Date.now(),
+    reviewCount: 0
+  });
+  saveState();
+  var addBtn = document.getElementById('word-lookup-add-btn');
+  addBtn.textContent = '已添加';
+  addBtn.className = 'word-lookup-add-btn word-lookup-added';
+  addBtn.disabled = true;
+  showToast('已加入生词本（' + (lookupSelectedCat === 'R' ? '阅读' : lookupSelectedCat === 'L' ? '听力' : '写作') + '词汇）');
+}
+
+function closeWordLookup(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('word-lookup-overlay').classList.remove('show');
+  document.getElementById('word-lookup-add-btn').style.display = '';
+  var catParent = document.querySelector('#word-lookup-overlay .wl-cat-btn');
+  if (catParent) catParent.parentNode.parentNode.style.display = '';
+}
+
+function fetchChineseTranslation(word) {
+  var el = document.getElementById('wl-chinese');
+  el.innerHTML = '<div style="font-size:13px;color:var(--color-text-tertiary);">正在翻译...</div>';
+  el.style.display = 'block';
+  fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(word) + '&langpair=en|zh-CN')
+    .then(function(r) { if (!r.ok) throw new Error('No translation'); return r.json(); })
+    .then(function(data) {
+      if (!data || !data.responseData || !data.responseData.translatedText) return;
+      var trans = data.responseData.translatedText;
+      if (trans && trans.toLowerCase() !== word.toLowerCase()) {
+        lookupChineseHtml = '<div style="padding:2px 0;">' + escapeHtml(trans) + '</div>';
+        el.innerHTML = lookupChineseHtml;
+        el.style.display = 'block';
+      }
+    })
+    .catch(function() {
+      el.innerHTML = '';
+      el.style.display = 'none';
+    });
+}
+
+function setupWordClickHandler(container) {
+  if (!container) return;
+  container.addEventListener('dblclick', function(e) {
+    var selection = window.getSelection();
+    if (!selection || !selection.toString().trim()) return;
+    if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.eb-nav-btn') || e.target.closest('.exam-nav-btn') || e.target.closest('.blank-slot') || e.target.closest('.wb-btn') || e.target.closest('.sb-letter-btn') || e.target.closest('.writ-answer')) return;
+    if (e.target.closest('.option-letter') || e.target.closest('.wl-cat-btn') || e.target.closest('.word-lookup-add-btn') || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    var word = selection.toString().trim().toLowerCase().replace(/[^a-z'-]/g, '');
+    if (word && word.length >= 2) {
+      try {
+        var range = selection.getRangeAt(0);
+        var hl = document.createElement('span');
+        hl.className = 'word-lookup-highlight';
+        hl.textContent = word;
+        range.deleteContents();
+        range.insertNode(hl);
+        selection.removeAllRanges();
+        setTimeout(function() {
+          var parent = hl.parentNode;
+          if (parent) {
+            var txt = document.createTextNode(hl.textContent);
+            parent.replaceChild(txt, hl);
+            parent.normalize();
+          }
+        }, 1200);
+      } catch(e) {
+        selection.removeAllRanges();
+      }
+      var ctx = getWordContext(container, word);
+      lookupWord(word, ctx);
+    }
+  });
+}
+
+function getWordContext(container, word) {
+  var allText = container.innerText || container.textContent || '';
+  var idx = allText.toLowerCase().indexOf(word);
+  if (idx === -1) return '';
+  var start = Math.max(0, idx - 60);
+  var end = Math.min(allText.length, idx + word.length + 80);
+  var snippet = allText.substring(start, end);
+  if (start > 0) snippet = '...' + snippet;
+  if (end < allText.length) snippet = snippet + '...';
+  return snippet;
+}
+
+// ============================================================
+// Checkin
+// ============================================================
+function renderCheckin() {
+  const container = document.getElementById('checkin-content');
+  const days = state.checkins.filter(function(c) { return c.taskDone; });
+  let html = '<div class="card-xl p-5 mb-4">';
+  html += '<h3 style="font-size:16px;font-weight:600;margin-bottom:12px;">打卡日历</h3>';
+  html += '<div class="grid grid-cols-7 gap-2 text-center">';
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  html += ['日','一','二','三','四','五','六'].map(function(d) {
+    return '<div style="font-size:12px;color:var(--color-text-tertiary);padding:4px;">' + d + '</div>';
+  }).join('');
+  for (let i = 0; i < firstDay; i++) html += '<div></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    const checked = days.some(function(c) { return c.date === dateStr; });
+    html += '<div style="padding:6px;border-radius:12px;font-size:14px;' + (checked ? 'background:var(--color-oasis);color:#fff;' : '') + '">' + d + '</div>';
+  }
+  html += '</div></div>';
+  html += '<div class="card-xl p-5"><h3 style="font-size:15px;font-weight:600;margin-bottom:8px;">打卡记录</h3>';
+  if (!days.length) {
+    html += '<p style="color:var(--color-text-tertiary);font-size:14px;">暂无打卡记录</p>';
+  } else {
+    html += '<div style="font-size:13px;color:var(--color-text-secondary);line-height:1.8;">共打卡 ' + days.length + ' 天</div>';
+    html += '<div style="font-size:13px;color:var(--color-text-secondary);">最长连续 ' + calcStreak() + ' 天</div>';
+    html += '<div style="margin-top:8px;max-height:200px;overflow-y:auto;">' + days.slice().reverse().slice(-30).reverse().map(function(c) {
+      return '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--color-border);font-size:13px;"><span>' + c.date + '</span><span style="color:var(--color-oasis);">' + c.count + ' 词</span></div>';
+    }).join('') + '</div>';
+  }
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ============================================================
+// Review (选择题式填空复习)
+// ============================================================
+var reviewMode = 'all';
+var reviewSubMode = 'fill';
+
+function switchReviewSubMode(mode) {
+  reviewSubMode = mode;
+  renderReview();
+}
+var reviewDistractors = {
+  'their':['there','they\'re','them','their'],
+  'there':['their','they\'re','them','there'],
+  'effect':['affect','effort','effect','afford'],
+  'affect':['effect','afford','affect','effort'],
+  'than':['then','that','than','them'],
+  'then':['than','when','then','them'],
+  'quite':['quiet','quit','quite','quote'],
+  'quiet':['quite','quit','quiet','quote'],
+  'except':['expect','except','accept','expert'],
+  'accept':['except','expect','accept','aspect'],
+  'expect':['except','expect','accept','expert'],
+  'principle':['principal','principle','principe','privacy'],
+  'principal':['principle','principal','principe','privacy'],
+  'personal':['personnel','personal','private','person'],
+  'personnel':['personal','personnel','person','private'],
+  'dessert':['desert','dessert','deserve','deserted'],
+  'desert':['dessert','desert','deserve','deserted'],
+  'conscious':['conscience','conscious','conscientious','consciousness'],
+  'conscience':['conscious','conscience','conscientious','consciousness'],
+  'economic':['economical','economic','economy','economics'],
+  'economical':['economic','economical','economy','economics'],
+  'historic':['historical','historic','history','historian'],
+  'historical':['historic','historical','history','historian'],
+  'imply':['infer','imply','reply','apply'],
+  'infer':['imply','infer','refer','prefer'],
+  'ensure':['insure','ensure','assure','sure'],
+  'insure':['ensure','insure','assure','sure'],
+  'assure':['ensure','insure','assure','reassure'],
+  'comprise':['compose','comprise','compromise','composite'],
+  'compose':['comprise','compose','composite','composure'],
+  'continual':['continuous','continual','continue','continued'],
+  'continuous':['continual','continuous','continue','continued'],
+  'considerable':['considerate','considerable','considered','considering'],
+  'considerate':['considerable','considerate','considered','considering'],
+  'sensitive':['sensible','sensitive','sensitive','sensory'],
+  'sensible':['sensitive','sensible','sensible','senseless'],
+  'respectable':['respectful','respective','respectable','respecting'],
+  'respectful':['respectable','respectful','respective','respecting'],
+  'respective':['respectable','respectful','respective','respecting'],
+  'tired':['tired','tried','tires','tiring'],
+  'alone':['along','alone','lonely','lone'],
+  'angle':['angel','angle','angry','ankle'],
+  'angel':['angle','angel','anger','ankle'],
+  'adapt':['adopt','adept','adapt','addict'],
+  'adopt':['adapt','adopt','adept','addict'],
+  'wander':['wonder','wander','wound','wanted'],
+  'wonder':['wander','wonder','wound','wanted'],
+  'rise':['raise','rise','arise','rouse'],
+  'raise':['rise','raise','arise','rouse'],
+  'arise':['rise','raise','arise','arouse'],
+  'lie':['lay','lie','lye','lei'],
+  'lay':['lie','lay','laid','pay'],
+  'late':['later','latter','late','latest'],
+  'later':['late','later','latter','latest'],
+  'latter':['late','later','latter','latest'],
+  'weather':['weather','whether','wether','winter'],
+  'whether':['weather','whether','wither','winter'],
+  'through':['though','thought','through','thorough'],
+  'though':['through','though','thought','thorough'],
+  'thought':['through','though','thought','thorough'],
+  'thorough':['through','though','thought','thorough'],
+  'reality':['reality','realty','reliability','really'],
+  'statue':['statue','status','statute','stature'],
+  'status':['statue','status','statute','stature'],
+  'statute':['statue','status','statute','stature'],
+  'quite':['quiet','quite','quit','quote'],
+  'clothes':['clothes','cloths','clothing','cloth'],
+  'extensive':['intensive','extensive','expensive','extent'],
+  'intensive':['intensive','extensive','expensive','intense'],
+  'suit':['suite','suit','sweet','suitable'],
+  'suite':['suit','suite','sweet','suited'],
+  'resource':['resource','source','recourse','resort'],
+  'source':['resource','source','sauce','recourse'],
+  'vacation':['vocation','vacation','vaccination','vibration'],
+  'vocation':['vocation','vacation','vaccination','vibration'],
+  'valuable':['valuable','valued','invaluable','valueless'],
+  'invaluable':['valuable','invaluable','valueless','valued'],
+  'attitude':['attitude','altitude','aptitude','latitude'],
+  'altitude':['attitude','altitude','aptitude','latitude'],
+  'proceed':['proceed','precede','preceding','procedure'],
+  'precede':['proceed','precede','preceding','precedent'],
+  'emigrate':['emigrate','immigrate','migrate','emigrant'],
+  'immigrate':['emigrate','immigrate','migrate','immigrant'],
+  'industrial':['industrial','industrious','industry','industrialize'],
+  'industrious':['industrial','industrious','industry','industrialize'],
+  'success':['success','succession','successful','successor'],
+  'succession':['success','succession','successful','successor'],
+  'successful':['success','succession','successful','successor'],
+  'successor':['success','succession','successful','successor']
+};
+
+function switchReviewMode(mode) {
+  reviewMode = mode;
+  renderReview();
+}
+
+function getReviewWords() {
+  var filtered = state.words.filter(function(w) {
+    if (reviewMode === 'all') return true;
+    return (w.category || '') === reviewMode;
+  });
+  var now = Date.now();
+  var byPriority = filtered.map(function(w) {
+    var due = true;
+    if (w.reviewCount > 0 && w.reviewDate) {
+      due = now > w.reviewDate;
+    }
+    var score = (w.correctCount || 0) - (w.wrongCount || 0);
+    return { word: w, due: due, score: score, reviewCount: w.reviewCount || 0 };
+  });
+  byPriority.sort(function(a, b) {
+    if (a.due !== b.due) return a.due ? -1 : 1;
+    if (a.reviewCount !== b.reviewCount) return a.reviewCount - b.reviewCount;
+    return a.score - b.score;
+  });
+  return byPriority;
+}
+
+function pickDistractors(word, count) {
+  var pool = [];
+  var wl = word.text.toLowerCase();
+  if (reviewDistractors[wl]) {
+    reviewDistractors[wl].forEach(function(d) { if (d !== wl) pool.push(d); });
+  }
+  state.words.forEach(function(w) {
+    var t = w.text.toLowerCase();
+    if (t === wl || pool.indexOf(t) !== -1) return;
+    if (t.length >= 3 && t.length <= wl.length + 2 && t.length >= wl.length - 2) {
+      var diff = 0;
+      for (var i = 0; i < Math.min(t.length, wl.length); i++) { if (t[i] !== wl[i]) diff++; }
+      if (diff <= 2) pool.push(t);
+    }
+  });
+  state.words.forEach(function(w) {
+    var t = w.text.toLowerCase();
+    if (t === wl || pool.indexOf(t) !== -1) return;
+    if (t.length >= 3) pool.push(t);
+  });
+  var extra = ['thing','think','people','about','would','could','should','which','their','there','first','great','where','after','other','still','while','every','never','might','often','always','almost','enough','however','though','through','result','reason'];
+  extra.forEach(function(e) {
+    if (e !== wl && pool.indexOf(e) === -1) pool.push(e);
+  });
+  var shuffled = pool.sort(function() { return Math.random() - 0.5; });
+  return shuffled.slice(0, count);
+}
+
+function renderReview() {
+  const container = document.getElementById('review-content');
+  var modeHtml = '<div class="card-xl p-4 mb-4"><div style="display:flex;gap:6px;">';
+  var modes = [
+    { key: 'all', label: '全部' },
+    { key: 'R', label: '📖 阅读' },
+    { key: 'L', label: '🎧 听力' },
+    { key: 'W', label: '✏️ 写作' }
+  ];
+  modes.forEach(function(m) {
+    var active = reviewMode === m.key ? ' style="background:var(--color-oasis);color:#fff;border-color:transparent;"' : '';
+    modeHtml += '<button class="eb-nav-btn" onclick="switchReviewMode(\''+m.key+'\')"'+active+'>'+m.label+'</button>';
+  });
+  modeHtml += '</div></div>';
+
+  modeHtml += '<div style="display:flex;gap:6px;margin-bottom:16px;padding:4px 0;justify-content:center;">';
+  var subModes = [
+    { key: 'fill', label: '✍️ 填空' },
+    { key: 'meaning', label: '💡 选义' }
+  ];
+  subModes.forEach(function(m) {
+    var active = reviewSubMode === m.key ? ' style="background:var(--color-oasis);color:#fff;border-color:transparent;"' : '';
+    modeHtml += '<button class="eb-nav-btn" onclick="switchReviewSubMode(\''+m.key+'\')"'+active+'>'+m.label+'</button>';
+  });
+  modeHtml += '</div>';
+
+  var entries = getReviewWords();
+  var dueEntries = entries.filter(function(e) { return e.due; });
+  if (dueEntries.length === 0) {
+    container.innerHTML = modeHtml + '<div class="card-xl" style="text-align:center;padding:60px 24px;"><div style="font-size:48px;margin-bottom:16px;">🎉</div><p style="color:var(--color-text-secondary);">暂无待复习单词</p><div style="margin-top:12px;font-size:13px;color:var(--color-text-tertiary);">生词本中共 ' + state.words.length + ' 个单词</div></div>';
+    return;
+  }
+
+  var totalDue = dueEntries.length;
+  var entry = dueEntries[0];
+  var word = entry.word;
+  var cat = word.category || '';
+
+  var sentence = '';
+  var hasSentence = false;
+  if (word.examples && word.examples.length > 0) {
+    for (var si = 0; si < word.examples.length; si++) {
+      if (word.examples[si].toLowerCase().indexOf(word.text.toLowerCase()) !== -1) {
+        sentence = word.examples[si];
+        hasSentence = true;
+        break;
+      }
+    }
+  }
+  if (!hasSentence && word.context && word.context.toLowerCase().indexOf(word.text.toLowerCase()) !== -1) {
+    sentence = word.context;
+    hasSentence = true;
+  }
+  if (!hasSentence) {
+    var templates = {};
+    templates['ability'] = 'His ___ to solve complex problems impressed everyone in the team.';
+    templates['absence'] = 'In the ___ of clear evidence, the jury could not reach a verdict.';
+    templates['absolutely'] = 'This is ___ the best solution we have found so far.';
+    templates['absorb'] = 'Plants ___ carbon dioxide and release oxygen during photosynthesis.';
+    templates['abstract'] = 'The concept was too ___ for the students to understand easily.';
+    templates['academic'] = 'She has an impressive ___ background with a Ph.D. in economics.';
+    templates['accelerate'] = 'The government plans to ___ the reform process in the coming year.';
+    templates['access'] = 'Students have free ___ to all online library resources.';
+    templates['accompany'] = 'A detailed report will ___ the final proposal.';
+    templates['accomplish'] = 'With hard work and dedication, you can ___ your goals.';
+    templates['accurate'] = 'It is important to provide ___ information in your research paper.';
+    templates['achieve'] = 'You need to work hard to ___ success in this competitive field.';
+    templates['acknowledge'] = 'We must ___ the contributions of all team members.';
+    templates['acquire'] = 'It takes time to ___ the skills needed for this job.';
+    templates['adapt'] = 'Companies must ___ to changing market conditions to survive.';
+    templates['adequate'] = 'The supply of clean water is not ___ in many developing countries.';
+    templates['adjust'] = 'It took me a while to ___ to the new environment.';
+    templates['administration'] = 'The ___ of the university announced new policies for students.';
+    templates['adopt'] = 'Many companies have decided to ___ remote working policies.';
+    templates['advance'] = 'Recent ___s in technology have transformed our daily lives.';
+    templates['advantage'] = 'Being bilingual is a great ___ in the job market.';
+    templates['affect'] = 'The economic crisis will ___ millions of people worldwide.';
+    templates['afford'] = 'Many families cannot ___ to buy a house in big cities.';
+    templates['aggressive'] = 'The company adopted an ___ marketing strategy to expand its market share.';
+    templates['allocate'] = 'The government decided to ___ more funds to education.';
+    templates['alternative'] = 'We need to find an ___ solution to this problem.';
+    templates['amaze'] = 'The magician\'s performance never failed to ___ the audience.';
+    templates['ambitious'] = 'She is an ___ young woman who wants to start her own business.';
+    templates['analyze'] = 'The purpose of this study is to ___ the effects of social media.';
+    templates['announce'] = 'The president will ___ his resignation tomorrow morning.';
+    templates['annual'] = 'The company holds an ___ meeting for all shareholders.';
+    templates['anxiety'] = 'Many students experience ___ before taking important exams.';
+    templates['apparent'] = 'It became ___ that the project would not be completed on time.';
+    templates['appetite'] = 'Regular exercise can help improve your ___ and digestion.';
+    templates['appliance'] = 'Modern kitchen ___s make cooking much easier than before.';
+    templates['applicant'] = 'The ___ must have at least three years of work experience.';
+    templates['apply'] = 'You should ___ for the scholarship before the deadline.';
+    templates['appoint'] = 'The committee decided to ___ her as the new director.';
+    templates['appreciate'] = 'I really ___ all the help you have given me.';
+    templates['approach'] = 'We need to adopt a new ___ to solve this problem.';
+    templates['appropriate'] = 'It is important to wear ___ clothes for a job interview.';
+    templates['approve'] = 'The board of directors is expected to ___ the merger.';
+    templates['arise'] = 'Several problems may ___ during the implementation process.';
+    templates['arrange'] = 'Could you please ___ a meeting for next Wednesday?';
+    templates['artificial'] = 'The use of ___ intelligence is transforming many industries.';
+    templates['aspect'] = 'Every ___ of the project needs to be carefully considered.';
+    templates['assess'] = 'The teacher will ___ the students\' performance at the end of the term.';
+    templates['assign'] = 'The professor will ___ a research paper for the final project.';
+    templates['assist'] = 'Teaching assistants ___ the professor in grading assignments.';
+    templates['associate'] = 'Many people ___ the brand with high quality and reliability.';
+    templates['assume'] = 'I ___ that everyone has read the instructions before starting.';
+    templates['atmosphere'] = 'The restaurant has a warm and friendly ___.';
+    templates['attach'] = 'Please ___ your resume to the application email.';
+    templates['attempt'] = 'He made a final ___ to finish the marathon despite his injury.';
+    templates['attend'] = 'All students are required to ___ the orientation session.';
+    templates['attitude'] = 'Your ___ towards learning determines your success.';
+    templates['attract'] = 'The museum hopes to ___ more visitors with the new exhibition.';
+    templates['authority'] = 'The local ___ has the power to issue building permits.';
+    templates['automatically'] = 'Your membership will be renewed ___ each year.';
+    templates['available'] = 'Is this book still ___ in the library?';
+    templates['average'] = 'The ___ temperature in summer here is about 30 degrees.';
+    templates['avoid'] = 'You should ___ eating too much sugar for better health.';
+    templates['aware'] = 'Many people are not ___ of the dangers of air pollution.';
+    templates['balance'] = 'It is important to maintain a ___ between work and life.';
+    templates['barrier'] = 'Language can be a major ___ to communication.';
+    templates['behave'] = 'Children should learn how to ___ properly in public places.';
+    templates['benefit'] = 'Regular exercise has many health ___.';
+    templates['blame'] = 'It is not fair to ___ others for your own mistakes.';
+    templates['boost'] = 'The new policy is expected to ___ economic growth.';
+    templates['boundary'] = 'Scientists continue to push the ___s of human knowledge.';
+    templates['budget'] = 'We need to plan our ___ carefully for the coming year.';
+    templates['burden'] = 'The high cost of education is a heavy ___ for many families.';
+    templates['campaign'] = 'They launched a ___ to raise awareness about climate change.';
+    templates['capable'] = 'She is a highly ___ manager with years of experience.';
+    templates['capacity'] = 'The hall has a seating ___ of 500 people.';
+    templates['capture'] = 'The photographer managed to ___ the beauty of the sunset.';
+    templates['career'] = 'She has had a successful ___ as a lawyer.';
+    templates['category'] = 'This book falls into the ___ of science fiction.';
+    templates['cause'] = 'Scientists are still investigating the ___ of the disease.';
+    templates['celebrate'] = 'We are going to ___ her birthday with a surprise party.';
+    templates['challenge'] = 'Starting a new business is a huge ___.';
+    templates['characteristic'] = 'The main ___ of this species is its ability to survive in extreme conditions.';
+    templates['circumstance'] = 'Under no ___ should you reveal the password to anyone.';
+    templates['claim'] = 'The scientist ___ed to have discovered a new species.';
+    templates['classify'] = 'Scientists ___ these animals into different categories.';
+    templates['climate'] = 'The ___ of this region is warm and humid throughout the year.';
+    templates['collapse'] = 'The old building was in danger of ___.';
+    templates['colleague'] = 'I discussed the matter with my ___ before making a decision.';
+    templates['combine'] = 'This course ___s theory with practical applications.';
+    templates['comment'] = 'Do you have any ___s on the proposed changes?';
+    templates['commercial'] = 'The movie was both a critical and a ___ success.';
+    templates['commit'] = 'We need to ___ ourselves to achieving our goals.';
+    templates['communicate'] = 'It is important to ___ clearly with your team members.';
+    templates['community'] = 'The local ___ came together to support the charity event.';
+    templates['company'] = '___, the profits have increased by 15% this year.';
+    templates['compare'] = 'It is difficult to ___ the two systems because they are so different.';
+    templates['compete'] = 'Small businesses often find it hard to ___ with large corporations.';
+    templates['complain'] = 'Many customers ___ about the poor quality of service.';
+    templates['complete'] = 'The project is expected to be ___ed by next month.';
+    templates['complex'] = 'The problem is too ___ for a simple solution.';
+    templates['complicate'] = 'The situation was ___d further by the bad weather.';
+    templates['component'] = 'Each ___ of the system must function properly.';
+    templates['comprehensive'] = 'The report provides a ___ overview of the situation.';
+    templates['concentrate'] = 'I cannot ___ with all this noise going on.';
+    templates['concept'] = 'The ___ of sustainable development has gained widespread recognition.';
+    templates['concern'] = 'Environmental protection is a major ___ for many people.';
+    templates['conclude'] = 'The researchers ___d that the treatment was effective.';
+    templates['condition'] = 'Under these ___, we cannot continue the project.';
+    templates['conduct'] = 'The experiment will be ___ed in a controlled environment.';
+    templates['confident'] = 'She is ___ that she will pass the exam.';
+    templates['confirm'] = 'Please write to ___ your reservation.';
+    templates['conflict'] = 'The ___ between the two countries lasted for several years.';
+    templates['confuse'] = 'The instructions were so unclear that they only served to ___ the students.';
+    templates['consequence'] = 'Global warming has serious ___s for the planet.';
+    templates['conservation'] = 'Wildlife ___ is essential for maintaining biodiversity.';
+    templates['considerable'] = 'The project required a ___ amount of time and effort.';
+    templates['consist'] = 'The committee ___s of fifteen members.';
+    templates['constant'] = 'The machine requires ___ maintenance to operate properly.';
+    templates['construct'] = 'The bridge was ___ed in 1998.';
+    templates['consume'] = 'This car ___s too much fuel.';
+    templates['contact'] = 'Please do not hesitate to ___ me if you have any questions.';
+    templates['contain'] = 'The box ___s all the documents you need.';
+    templates['contemporary'] = 'The museum has an excellent collection of ___ art.';
+    templates['contribute'] = 'Everyone should ___ to protecting the environment.';
+    templates['controversy'] = 'The decision to build the factory has caused much ___.';
+    templates['convenient'] = 'The new subway system is very ___ for commuters.';
+    templates['convince'] = 'It will be difficult to ___ the committee to approve this plan.';
+    templates['cooperate'] = 'The two companies have agreed to ___ on the project.';
+    templates['creative'] = 'The company encourages ___ thinking among its employees.';
+    templates['crisis'] = 'The economic ___ affected millions of people.';
+    templates['criteria'] = 'The ___ for selection include academic performance and leadership skills.';
+    templates['critical'] = 'It is ___ that we find a solution as soon as possible.';
+    templates['cultivate'] = 'It takes years to ___ the skills needed for this profession.';
+    templates['curiosity'] = 'Children are born with a natural ___ about the world.';
+    templates['current'] = 'The ___ situation requires immediate action.';
+    templates['debate'] = 'There has been a heated ___ on the issue of immigration.';
+    templates['decade'] = 'Over the past ___, technology has advanced dramatically.';
+    templates['decline'] = 'The population of the village has been in ___ for years.';
+    templates['decorate'] = 'Everyone helped to ___ the hall for the party.';
+    templates['decrease'] = 'The number of students has ___d significantly this year.';
+    templates['defeat'] = 'The team suffered a heavy ___ in the final match.';
+    templates['defend'] = 'It is our duty to ___ our country against any attack.';
+    templates['define'] = 'How would you ___ success?';
+    templates['definitely'] = 'This is ___ the best movie I have seen this year.';
+    templates['deliberately'] = 'He ___ ignored my question and changed the subject.';
+    templates['delicate'] = 'The operation requires extremely ___ surgical skills.';
+    templates['deliver'] = 'The package was ___ed on time.';
+    templates['demand'] = 'There is a high ___ for skilled workers in this field.';
+    templates['demonstrate'] = 'The experiment ___s that the theory is correct.';
+    templates['deny'] = 'The suspect ___ed any involvement in the crime.';
+    templates['departure'] = 'The ___ of the flight has been delayed due to bad weather.';
+    templates['dependent'] = 'The country is heavily ___ on oil exports.';
+    templates['depress'] = 'Bad weather always ___es me.';
+    templates['derive'] = 'Many English words are ___d from Latin.';
+    templates['describe'] = 'Can you ___ what happened in detail?';
+    templates['deserve'] = 'She works hard and ___s to be promoted.';
+    templates['desire'] = 'The ___ for knowledge is a fundamental human trait.';
+    templates['destination'] = 'Our ___ is a small town in the mountains.';
+    templates['destroy'] = 'The fire completely ___ed the building.';
+    templates['determine'] = 'The test results will ___ which course you can take.';
+    templates['develop'] = 'The company plans to ___ new products for the international market.';
+    templates['device'] = 'This ___ can translate speech into text in real time.';
+    templates['devote'] = 'She ___d her entire life to scientific research.';
+    templates['discipline'] = 'Learning a musical instrument requires a lot of ___.';
+    templates['discover'] = 'Scientists have ___ed a new cure for the disease.';
+    templates['discuss'] = 'We need to ___ the matter further at the next meeting.';
+    templates['display'] = 'The art gallery will ___ works by local artists.';
+    templates['distinguish'] = 'It is sometimes difficult to ___ between the two species.';
+    templates['distribute'] = 'The organization helps to ___ food to the homeless.';
+    templates['domestic'] = 'The airline operates both international and ___ flights.';
+    templates['dominate'] = 'The company ___s the global smartphone market.';
+    templates['dramatic'] = 'There has been a ___ change in public opinion.';
+    templates['duration'] = 'The course is of six months\' ___.';
+    templates['dynamic'] = 'The job market is constantly changing and ___.';
+    templates['economy'] = 'The country\'s ___ has been growing steadily.';
+    templates['educate'] = 'The campaign aims to ___ the public about healthy eating.';
+    templates['efficient'] = 'The new system is much more ___ than the old one.';
+    templates['effort'] = 'You need to put more ___ into your studies.';
+    templates['election'] = 'The presidential ___ will be held next year.';
+    templates['eliminate'] = 'The goal is to ___ poverty by 2030.';
+    templates['emerge'] = 'New technologies are ___ing at an astonishing rate.';
+    templates['emotion'] = 'The film was so moving that it stirred deep ___s in the audience.';
+    templates['emphasis'] = 'The school puts great ___ on academic achievement.';
+    templates['employ'] = 'The company ___s over 5,000 people worldwide.';
+    templates['enable'] = 'Online learning ___s students to study at their own pace.';
+    templates['encounter'] = 'I ___ed many difficulties during the project.';
+    templates['encourage'] = 'Teachers should ___ students to think critically.';
+    templates['engage'] = 'The professor\'s lecture ___d the students\' interest.';
+    templates['enormous'] = 'The project requires an ___ amount of investment.';
+    templates['ensure'] = 'Please ___ that all doors are locked before leaving.';
+    templates['establish'] = 'The company was ___ed in 1995.';
+    templates['evaluate'] = 'We need to ___ the effectiveness of the program.';
+    templates['evident'] = 'It was ___ that she had been crying.';
+    templates['evolve'] = 'Human language has ___d over thousands of years.';
+    templates['examine'] = 'The doctor ___d the patient carefully.';
+    templates['exceed'] = 'The demand has ___ed our expectations.';
+    templates['exceptional'] = 'She is an ___ student with excellent grades.';
+    templates['exchange'] = 'Students have the opportunity to ___ ideas with their peers.';
+    templates['exclude'] = 'The insurance policy ___s coverage for pre-existing conditions.';
+    templates['execute'] = 'The plan must be ___d precisely according to schedule.';
+    templates['exercise'] = 'Regular ___ is essential for maintaining good health.';
+    templates['exhibit'] = 'The museum ___s works by famous artists from around the world.';
+    templates['expand'] = 'The company plans to ___ its operations overseas.';
+    templates['expect'] = 'We ___ the results to be published next month.';
+    templates['expense'] = 'The ___ of living in the city is very high.';
+    templates['experiment'] = 'The ___ must be conducted under strict conditions.';
+    templates['exploit'] = 'Companies should not ___ their workers.';
+    templates['explore'] = 'We need to ___ all possible options before making a decision.';
+    templates['expose'] = 'The documentary ___d the truth about the scandal.';
+    templates['extend'] = 'I would like to ___ my gratitude to everyone who helped.';
+    templates['extensive'] = 'The report is based on ___ research.';
+    templates['external'] = 'The company hired an ___ consultant to review its operations.';
+    templates['extraordinary'] = 'She has an ___ talent for music.';
+    templates['extreme'] = 'It is important to avoid ___ diets for weight loss.';
+    templates['facilitate'] = 'The new system will ___ communication between departments.';
+    templates['faculty'] = 'She is a member of the teaching ___ at Harvard University.';
+    templates['failure'] = '___ is often the first step towards success.';
+    templates['familiar'] = 'I am not ___ with the local customs.';
+    templates['fascinate'] = 'The ancient ruins ___d the archaeologists.';
+    templates['feature'] = 'The main ___ of this phone is its long battery life.';
+    templates['finance'] = 'The project is ___d by the government.';
+    templates['flexible'] = 'We need a more ___ approach to deal with this situation.';
+    templates['forecast'] = 'The weather ___ says it will rain tomorrow.';
+    templates['foundation'] = 'This course provides a solid ___ in mathematics.';
+    templates['frequency'] = 'The ___ of traffic accidents increases during holidays.';
+    templates['frequent'] = 'There are ___ flights between the two cities.';
+    templates['function'] = 'The main ___ of the heart is to pump blood.';
+    templates['fundamental'] = 'Reading is a ___ skill that every child must learn.';
+    templates['furthermore'] = 'The house is beautiful. ___, it is located in a convenient area.';
+    templates['generate'] = 'This solar panel can ___ enough electricity for a house.';
+    templates['generous'] = 'The charity received a ___ donation from the company.';
+    templates['genuine'] = 'She showed a ___ interest in helping others.';
+    templates['global'] = 'Climate change is a ___ issue that affects everyone.';
+    templates['gradually'] = 'The situation improved ___.';
+    templates['guarantee'] = 'Hard work is no ___ of success, but it helps.';
+    templates['harmony'] = 'We must live in ___ with nature.';
+    templates['hesitate'] = 'If you need help, don\'t ___ to ask.';
+    templates['highly'] = 'She is a ___ respected professor in her field.';
+    templates['identify'] = 'The police are trying to ___ the suspect.';
+    templates['ignore'] = 'Drivers should never ___ traffic rules.';
+    templates['illustrate'] = 'This example ___s the importance of careful planning.';
+    templates['imagination'] = 'Children have a rich ___.';
+    templates['immediate'] = 'The patient requires ___ medical attention.';
+    templates['immense'] = 'The project requires an ___ amount of work.';
+    templates['impact'] = 'Social media has a huge ___ on young people.';
+    templates['implement'] = 'The new policy will be ___ed from next month.';
+    templates['imply'] = 'What are you trying to ___ by that statement?';
+    templates['impose'] = 'The government decided to ___ a tax on sugary drinks.';
+    templates['impress'] = 'The quality of the work ___ed the manager.';
+    templates['improve'] = 'You need to ___ your writing skills for the exam.';
+    templates['incident'] = 'The police are investigating the ___.';
+    templates['incline'] = 'I am ___d to agree with your proposal.';
+    templates['income'] = 'People with higher ___s tend to live longer.';
+    templates['increasingly'] = 'It is becoming ___ difficult to find parking in the city.';
+    templates['independent'] = 'She is very ___ and doesn\'t like to depend on others.';
+    templates['indicate'] = 'The study ___s that exercise improves mental health.';
+    templates['individual'] = 'Each student has ___ learning needs.';
+    templates['inevitable'] = 'Change is ___ in any organization.';
+    templates['influence'] = 'Parents have a strong ___ on their children\'s development.';
+    templates['inform'] = 'Please ___ us of any changes in your schedule.';
+    templates['initial'] = 'My ___ reaction was one of surprise.';
+    templates['initiative'] = 'She took the ___ to organize the event.';
+    templates['innovate'] = 'The company is known for its ability to ___.';
+    templates['inspire'] = 'Her speech ___d many young people to pursue their dreams.';
+    templates['institute'] = 'The research ___ was founded in 1950.';
+    templates['instruct'] = 'The manual ___s users on how to operate the machine.';
+    templates['insurance'] = 'You need ___ to drive a car legally.';
+    templates['integrate'] = 'The new system will be ___d with the existing one.';
+    templates['intellectual'] = 'The university is a center of ___ activity.';
+    templates['intelligent'] = 'She is an ___ student who always asks insightful questions.';
+    templates['intense'] = 'The competition was extremely ___.';
+    templates['interact'] = 'Teachers should ___ more with their students.';
+    templates['interpret'] = 'How do you ___ the results of the study?';
+    templates['investigate'] = 'The police are ___ing the cause of the fire.';
+    templates['involve'] = 'The project will ___ a lot of research.';
+    templates['isolate'] = 'The patient was ___d to prevent the virus from spreading.';
+    templates['issue'] = 'Environmental protection is an important ___.';
+    templates['justify'] = 'How can you ___ spending so much money on this?';
+    templates['knowledge'] = '___ is power.';
+    templates['landscape'] = 'The ___ of the city has changed dramatically.';
+    templates['launch'] = 'The company plans to ___ a new product next month.';
+    templates['maintain'] = 'It is important to ___ a healthy lifestyle.';
+    templates['manufacture'] = 'This factory ___s car parts.';
+    templates['massive'] = 'The storm caused ___ damage to the city.';
+    templates['mature'] = 'She is very ___ for her age.';
+    templates['maximum'] = 'The ___ temperature today will be 35 degrees.';
+    templates['mechanism'] = 'The market ___ determines the price of goods.';
+    templates['medium'] = 'Social ___ has become an important tool for communication.';
+    templates['mental'] = '___ health is as important as physical health.';
+    templates['minor'] = 'The project requires only ___ adjustments.';
+    templates['misunderstanding'] = 'The conflict was caused by a simple ___.';
+    templates['modify'] = 'We need to ___ the design to meet the requirements.';
+    templates['monitor'] = 'Doctors ___ the patient\'s condition closely.';
+    templates['motivate'] = 'A good leader should ___ their team members.';
+    templates['multiply'] = 'The bacteria ___ rapidly in warm conditions.';
+    templates['mutual'] = 'The agreement was reached by ___ consent.';
+    templates['necessary'] = 'It is ___ to arrive on time for the interview.';
+    templates['negative'] = 'Stress can have a ___ effect on your health.';
+    templates['negotiate'] = 'The union is ___ing for better working conditions.';
+    templates['nevertheless'] = 'The weather was bad. ___, we decided to go for a walk.';
+    templates['normal'] = 'Under ___ circumstances, the process takes about two weeks.';
+    templates['numerous'] = 'There are ___ reasons why this approach is better.';
+    templates['obtain'] = 'How did you ___ the necessary information?';
+    templates['obvious'] = 'It was ___ that he was lying.';
+    templates['occupy'] = 'The protesters ___ the building for three days.';
+    templates['offend'] = 'I didn\'t mean to ___ you with my comments.';
+    templates['operate'] = 'This machine is ___d by electricity.';
+    templates['opponent'] = 'She defeated her ___ in the final match.';
+    templates['opportunity'] = 'This is a great ___ to gain work experience.';
+    templates['oppose'] = 'The majority of people ___ the new policy.';
+    templates['optimistic'] = 'She remains ___ about the future despite the challenges.';
+    templates['organize'] = 'The event is ___d by the student union.';
+    templates['original'] = 'The ___ plan had to be changed due to budget cuts.';
+    templates['outcome'] = 'The ___ of the election was a surprise to many.';
+    templates['overall'] = 'The ___ performance of the team was excellent.';
+    templates['overcome'] = 'She managed to ___ all the difficulties she faced.';
+    templates['overwhelm'] = 'The amount of work was __ing.';
+    templates['participate'] = 'All students are encouraged to ___ in the competition.';
+    templates['particular'] = 'I have a ___ interest in environmental issues.';
+    templates['partly'] = 'The accident was ___ due to bad weather.';
+    templates['passion'] = 'She has a ___ for teaching.';
+    templates['patient'] = 'You need to be more ___ with beginners.';
+    templates['perceive'] = 'How do the public ___ this issue?';
+    templates['perform'] = 'The team ___ed well in the competition.';
+    templates['permanent'] = 'The damage to the environment may be ___.';
+    templates['permit'] = 'Smoking is not ___ted in this building.';
+    templates['persist'] = 'If you ___, you will eventually succeed.';
+    templates['personality'] = 'She has a warm and friendly ___.';
+    templates['perspective'] = 'Try to look at this from a different ___.';
+    templates['phenomenon'] = 'Globalization is a complex ___.';
+    templates['philosophy'] = 'The company\'s ___ is to put customers first.';
+    templates['portion'] = 'A large ___ of the budget is spent on education.';
+    templates['possess'] = 'She ___es all the qualities required for this position.';
+    templates['potential'] = 'This idea has great ___ for development.';
+    templates['poverty'] = 'The government is working to reduce ___.';
+    templates['practical'] = 'The course focuses on ___ skills rather than theory.';
+    templates['precious'] = 'Time is our most ___ resource.';
+    templates['precise'] = 'You need to give a ___ description of what happened.';
+    templates['predict'] = 'It is difficult to ___ what will happen in the future.';
+    templates['prefer'] = 'Many people ___ to work from home.';
+    templates['pregnant'] = 'The study found that exercise during ___ is beneficial.';
+    templates['prejudice'] = 'We must fight against ___ and discrimination.';
+    templates['preserve'] = 'We must ___ the natural environment for future generations.';
+    templates['pressure'] = 'Many students feel a lot of ___ to succeed.';
+    templates['presumably'] = 'He has ___ already been informed of the decision.';
+    templates['prevail'] = 'Justice will ___ in the end.';
+    templates['previous'] = 'The ___ owner of the house left it in good condition.';
+    templates['primarily'] = 'The course is ___ designed for beginners.';
+    templates['principle'] = 'We must stick to our ___.';
+    templates['priority'] = 'Education should be a top ___.';
+    templates['privilege'] = 'It is a ___ to work with such talented people.';
+    templates['procedure'] = 'You must follow the correct ___.';
+    templates['proceed'] = 'Please ___ with your presentation.';
+    templates['process'] = 'The application ___ takes about two weeks.';
+    templates['professional'] = 'You should seek ___ advice on this matter.';
+    templates['profit'] = 'The company made a large ___ this year.';
+    templates['profound'] = 'The experience had a ___ effect on her.';
+    templates['progress'] = 'The project is making steady ___.';
+    templates['promote'] = 'The government should ___ healthy eating habits.';
+    templates['prompt'] = 'Your ___ response is greatly appreciated.';
+    templates['proper'] = 'Make sure you use the ___ equipment for this task.';
+    templates['property'] = 'The ___ values in this area have increased significantly.';
+    templates['proportion'] = 'A large ___ of the population lives in cities.';
+    templates['propose'] = 'I ___ that we postpone the meeting until next week.';
+    templates['prospect'] = 'The job ___s in this field are excellent.';
+    templates['protest'] = 'Thousands of people ___ed against the new law.';
+    templates['psychology'] = 'She is studying ___ at university.';
+    templates['purchase'] = 'You can ___ tickets online.';
+    templates['pursue'] = 'She decided to ___ a career in medicine.';
+    templates['qualification'] = 'What are the ___s for this position?';
+    templates['quantity'] = 'A large ___ of food was wasted.';
+    templates['radical'] = 'The company needs ___ changes to survive.';
+    templates['range'] = 'The products cover a wide ___ of prices.';
+    templates['rapid'] = 'The city has experienced ___ growth in recent years.';
+    templates['rare'] = 'This species is extremely ___.';
+    templates['rational'] = 'We need to make a ___ decision based on the facts.';
+    templates['react'] = 'How do you think the market will ___ to this news?';
+    templates['realistic'] = 'We need to set ___ goals for the project.';
+    templates['reality'] = 'The ___ is that we cannot afford such a luxury.';
+    templates['reasonable'] = 'The price seems ___ for the quality.';
+    templates['receive'] = 'She ___d a scholarship to study abroad.';
+    templates['recognition'] = 'She gained international ___ for her research.';
+    templates['recommend'] = 'I highly ___ this book to anyone interested in history.';
+    templates['recover'] = 'The economy is gradually ___ing.';
+    templates['reduce'] = 'We need to ___ our expenses.';
+    templates['reflect'] = 'The results ___ the hard work of the entire team.';
+    templates['reform'] = 'The education system needs ___.';
+    templates['region'] = 'The ___ has experienced significant economic growth.';
+    templates['register'] = 'You must ___ for the course before the deadline.';
+    templates['regulate'] = 'The government ___s the financial industry.';
+    templates['reinforce'] = 'The evidence ___s the need for stricter regulations.';
+    templates['reject'] = 'The committee ___ed the proposal.';
+    templates['relate'] = 'I cannot ___ to what you are saying.';
+    templates['release'] = 'The new movie will be ___d next month.';
+    templates['relevant'] = 'Your experience is directly ___ to this job.';
+    templates['relief'] = 'The medicine brought immediate ___ from the pain.';
+    templates['reluctant'] = 'She was ___ to accept the offer.';
+    templates['rely'] = 'You can ___ on her to get the job done.';
+    templates['remain'] = 'The cause of the accident ___s unknown.';
+    templates['remarkable'] = 'She has made ___ progress in her studies.';
+    templates['remedy'] = 'There is no simple ___ for this problem.';
+    templates['remote'] = 'He lives in a ___ village in the mountains.';
+    templates['remove'] = 'Please ___ your shoes before entering.';
+    templates['replace'] = 'Robots will not ___ human workers entirely.';
+    templates['represent'] = 'This painting ___s the artist\'s early style.';
+    templates['reputation'] = 'The university has an excellent ___.';
+    templates['request'] = 'Your ___ has been approved.';
+    templates['require'] = 'This position ___s at least three years of experience.';
+    templates['research'] = 'The ___ team is conducting experiments on the new drug.';
+    templates['reserve'] = 'I would like to ___ a table for two.';
+    templates['resign'] = 'The CEO has ___ed due to health reasons.';
+    templates['resist'] = 'It is difficult to ___ the temptation of chocolate.';
+    templates['resolution'] = 'They reached a ___ after hours of negotiation.';
+    templates['resolve'] = 'We must find a way to ___ this conflict.';
+    templates['resource'] = 'The library has a wealth of ___s for researchers.';
+    templates['respond'] = 'Please ___ to the invitation by Friday.';
+    templates['responsible'] = 'Who is ___ for this mistake?';
+    templates['restore'] = 'The government is trying to ___ public trust.';
+    templates['restrict'] = 'The new law ___s the use of plastic bags.';
+    templates['reveal'] = 'The investigation ___ed shocking facts.';
+    templates['reverse'] = 'The trend appears to be ___.';
+    templates['revise'] = 'You should ___ your essay before submitting it.';
+    templates['revolution'] = 'The industrial ___ changed society completely.';
+    templates['risk'] = 'Smoking increases the ___ of lung cancer.';
+    templates['rural'] = 'The ___ areas lack access to quality healthcare.';
+    templates['sacrifice'] = 'Parents often make many ___s for their children.';
+    templates['satisfaction'] = 'Customer ___ is our top priority.';
+    templates['satisfy'] = 'We must ___ the demands of our clients.';
+    templates['schedule'] = 'The flight is ___d to depart at 3 PM.';
+    templates['scheme'] = 'The government launched a new ___ to help job seekers.';
+    templates['section'] = 'Please refer to the relevant ___ of the document.';
+    templates['secure'] = 'Make sure the door is ___ly locked.';
+    templates['seek'] = 'You should ___ professional advice before making a decision.';
+    templates['select'] = 'Please ___ the items you wish to purchase.';
+    templates['sensitive'] = 'This issue is highly ___.';
+    templates['separate'] = 'The two countries are ___d by a mountain range.';
+    templates['sequence'] = 'The events occurred in a strange ___.';
+    templates['severe'] = 'The storm caused ___ damage to crops.';
+    templates['shelter'] = 'The homeless need food, clothing, and ___.';
+    templates['shift'] = 'There has been a ___ in public opinion.';
+    templates['significant'] = 'There has been a ___ improvement in her performance.';
+    templates['similar'] = 'The two paintings are strikingly ___.';
+    templates['simplify'] = 'The new system will ___ the application process.';
+    templates['skilled'] = 'The company is looking for ___ workers.';
+    templates['slight'] = 'There was a ___ increase in sales last month.';
+    templates['solution'] = 'We need to find a ___ to this problem as soon as possible.';
+    templates['somewhat'] = 'The situation is ___ different from what we expected.';
+    templates['sophisticated'] = 'The system is too ___ for most users to understand.';
+    templates['source'] = 'We need to identify the ___ of the problem.';
+    templates['specific'] = 'You need to be more ___ about what you want.';
+    templates['stable'] = 'The patient\'s condition is ___.';
+    templates['standard'] = 'The work must meet certain ___.';
+    templates['status'] = 'What is your current employment ___?';
+    templates['strategy'] = 'We need to develop a new ___ for marketing.';
+    templates['strength'] = 'Her greatest ___ is her ability to communicate.';
+    templates['stress'] = 'Too much ___ can have negative effects on health.';
+    templates['structure'] = 'The ___ of the organization needs to be changed.';
+    templates['struggle'] = 'Many families ___ to make ends meet.';
+    templates['subsequent'] = 'The ___ events proved her theory was correct.';
+    templates['substantial'] = 'The report requires a ___ amount of research.';
+    templates['substitute'] = 'You can use honey as a ___ for sugar.';
+    templates['success'] = 'Hard work is the key to ___.';
+    templates['sufficient'] = 'One hour is not ___ to complete the task.';
+    templates['suggest'] = 'I ___ that we take a different approach.';
+    templates['suitable'] = 'This film is not ___ for young children.';
+    templates['superior'] = 'This product is ___ to conventional alternatives.';
+    templates['supplement'] = 'Many people take vitamin ___s to improve their health.';
+    templates['supply'] = 'The ___ of clean water is inadequate in some regions.';
+    templates['support'] = 'Her family ___ed her decision to study abroad.';
+    templates['suppose'] = 'I ___ you have already heard the news.';
+    templates['surface'] = 'The ___ of the planet is mostly covered by water.';
+    templates['surplus'] = 'The country has a ___ of agricultural products.';
+    templates['surround'] = 'The house is ___ed by beautiful gardens.';
+    templates['survey'] = 'The ___ shows that most people support the new policy.';
+    templates['survive'] = 'Only the strongest can ___ in this competitive industry.';
+    templates['suspect'] = 'The police ___ him of stealing the money.';
+    templates['suspend'] = 'Flights were ___ed due to the snowstorm.';
+    templates['sustain'] = 'The economy has been ___ing steady growth.';
+    templates['symbol'] = 'The dove is a ___ of peace.';
+    templates['sympathy'] = 'I have a lot of ___ for her situation.';
+    templates['target'] = 'We need to ___ our marketing efforts at young people.';
+    templates['technique'] = 'You need to learn the proper ___s for this experiment.';
+    templates['technology'] = 'Advances in ___ have changed our lives dramatically.';
+    templates['temporary'] = 'This is only a ___ solution to the problem.';
+    templates['tendency'] = 'There is a growing ___ for people to work from home.';
+    templates['tension'] = 'The ___ between the two countries is increasing.';
+    templates['terminal'] = 'The disease was diagnosed at an advanced stage and was ___.';
+    templates['territory'] = 'The explorers ventured into unknown ___.';
+    templates['threaten'] = 'Climate change ___s the future of our planet.';
+    templates['tolerate'] = 'We cannot ___ such behavior in our school.';
+    templates['trace'] = 'The police found no ___ of the missing child.';
+    templates['tradition'] = 'It is a ___ to exchange gifts during the Spring Festival.';
+    templates['transfer'] = 'She was ___red to the New York office.';
+    templates['transform'] = 'The internet has ___ed the way we communicate.';
+    templates['tremendous'] = 'The project requires a ___ amount of effort.';
+    templates['trend'] = 'The ___ towards online shopping continues to grow.';
+    templates['trigger'] = 'The news ___ed a wave of panic among investors.';
+    templates['typical'] = 'This is a ___ example of his work.';
+    templates['ultimate'] = 'The ___ goal is to achieve world peace.';
+    templates['undergo'] = 'The company is ___ing major restructuring.';
+    templates['undermine'] = 'The scandal ___d public trust in the government.';
+    templates['undertake'] = 'The university will ___ a major renovation project.';
+    templates['unemployment'] = 'The ___ rate has decreased significantly this year.';
+    templates['unexpected'] = 'His ___ arrival surprised everyone.';
+    templates['unique'] = 'Everyone has ___ talents and abilities.';
+    templates['universal'] = 'Access to education should be a ___ right.';
+    templates['urban'] = 'The ___ population has grown rapidly in recent decades.';
+    templates['urge'] = 'I strongly ___ you to reconsider your decision.';
+    templates['utilize'] = 'We must ___ our resources more efficiently.';
+    templates['valid'] = 'Your ticket is ___ for three months.';
+    templates['vanish'] = 'Many species are ___ing from the earth.';
+    templates['variable'] = 'The weather is highly ___ in this region.';
+    templates['variety'] = 'The store offers a wide ___ of products.';
+    templates['version'] = 'The latest ___ of the software has many new features.';
+    templates['victim'] = 'The ___s of the accident were taken to hospital.';
+    templates['violate'] = 'The company was fined for ___ing safety regulations.';
+    templates['virtually'] = 'The work is ___ complete.';
+    templates['visible'] = 'The stars are ___ in the night sky.';
+    templates['vision'] = 'He had a clear ___ of what he wanted to achieve.';
+    templates['vital'] = 'Regular exercise is ___ for good health.';
+    templates['volume'] = 'The ___ of sales has increased this quarter.';
+    templates['voluntary'] = 'She does ___ work at the local hospital.';
+    templates['vulnerable'] = 'Children are the most ___ members of our society.';
+    templates['welfare'] = 'The government is responsible for the ___ of its citizens.';
+    templates['widespread'] = 'The use of smartphones has become ___.';
+    templates['willing'] = 'Are you ___ to take on this responsibility?';
+    templates['withdraw'] = 'He decided to ___ his application.';
+    templates['witness'] = 'There were several ___es to the accident.';
+    templates['workforce'] = 'The ___ has changed dramatically in recent years.';
+    templates['worthwhile'] = 'It was a ___ effort despite the difficulties.';
+    templates['yield'] = 'The experiment ___ed interesting results.';
+    var wl = word.text.toLowerCase();
+    var matchedTemplate = null;
+    for (var t in templates) {
+      if (wl.indexOf(t) !== -1 || t.indexOf(wl) !== -1) {
+        matchedTemplate = templates[t];
+        break;
+      }
+    }
+    if (matchedTemplate) {
+      sentence = matchedTemplate;
+      hasSentence = true;
+    } else {
+      var prefixes = ['One important', 'A common', 'The main', 'An essential', 'A key'];
+      var suffixes = ['plays a crucial role in our daily lives.', 'is an important concept to understand.', 'refers to a significant aspect of society.', 'has become increasingly relevant in recent years.'];
+      var p = prefixes[Math.floor(Math.random() * prefixes.length)];
+      var s = suffixes[Math.floor(Math.random() * suffixes.length)];
+      var tmplWord = wl.charAt(0).toUpperCase() + wl.slice(1);
+      sentence = p + ' ' + tmplWord + ' ' + s;
+      hasSentence = true;
+    }
+  }
+
+  var correctLower = word.text.toLowerCase();
+  var blankedSentence = sentence.replace(new RegExp('(' + correctLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '[___]');
+   blankedSentence = escapeHtml(blankedSentence).replace(/\[___\]/g, '<span class="review-blank">______</span>');
+
+  var distractors = pickDistractors(word, 3);
+  var options = [{ key: correctLower, text: word.text }];
+  distractors.forEach(function(d) {
+    var display = d;
+    state.words.some(function(w) { if (w.text.toLowerCase() === d) { display = w.text; return true; } return false; });
+    options.push({ key: d, text: display });
+  });
+  options.sort(function() { return Math.random() - 0.5; });
+
+  var badgeText = cat === 'R' ? '📖 阅读' : cat === 'L' ? '🎧 听力' : cat === 'W' ? '✏️ 写作' : '未分类';
+  var badgeClass = cat === 'R' ? 'review-badge-r' : cat === 'L' ? 'review-badge-l' : cat === 'W' ? 'review-badge-w' : 'review-badge-none';
+  var correctCount = word.correctCount || 0;
+  var wrongCount = word.wrongCount || 0;
+
+  var html = '';
+  html += '<div class="review-quiz-card">';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">';
+  html += '<div><span class="review-badge ' + badgeClass + '">' + badgeText + '</span>';
+  if (word.phonetic) html += '<span style="font-size:13px;color:var(--color-text-tertiary);margin-left:8px;">' + escapeHtml(word.phonetic) + '</span></div>';
+  html += '<div style="font-size:12px;color:var(--color-text-tertiary);">待复习 ' + totalDue + ' 词</div>';
+  html += '</div>';
+
+  if (reviewSubMode === 'fill') {
+    html += '<div class="review-sentence">' + blankedSentence + '</div>';
+    html += '<div style="font-size:12px;color:var(--color-text-tertiary);text-align:center;margin-bottom:8px;">选择正确单词填入空白处</div>';
+  } else {
+    var meaningDisplay = '';
+    if (word.chinese) {
+      meaningDisplay = '<div style="font-size:20px;font-weight:700;color:var(--color-oasis-dark);padding:18px 20px;background:rgba(39,163,163,0.04);border-radius:16px;border:1px solid rgba(39,163,163,0.15);text-align:center;margin-bottom:16px;">' + escapeHtml(word.chinese) + '</div>';
+    } else if (word.context) {
+      meaningDisplay = '<div style="font-size:15px;line-height:1.8;color:var(--color-text);padding:18px 20px;background:#FAF8F6;border-radius:16px;border:1px solid #F0EDE8;margin-bottom:16px;">' + escapeHtml(word.context) + '</div>';
+    } else {
+      meaningDisplay = '<div style="font-size:14px;color:var(--color-text-tertiary);text-align:center;padding:18px;background:#FAF8F6;border-radius:16px;margin-bottom:16px;">暂无释义</div>';
+    }
+    html += meaningDisplay;
+    html += '<div style="font-size:12px;color:var(--color-text-tertiary);text-align:center;margin-bottom:8px;">选择与以上释义匹配的单词</div>';
+  }
+
+  html += '<div id="review-quiz-result" style="margin-bottom:14px;min-height:36px;"></div>';
+
+  html += '<div class="review-options-grid">';
+  options.forEach(function(o, oi) {
+    html += '<button class="review-option-btn" id="rq-opt-' + oi + '" onclick="checkReviewAnswer(' + oi + ')">' + escapeHtml(o.text) + '</button>';
+  });
+  html += '</div>';
+
+  html += '<div style="margin-top:16px;padding-top:14px;border-top:1px solid #EDF2F7;font-size:12px;color:var(--color-text-tertiary);display:flex;justify-content:space-between;">';
+  html += '<span>正确 ' + correctCount + ' 次 / 错误 ' + wrongCount + ' 次</span>';
+  html += '<span>复习 ' + (word.reviewCount || 0) + ' 次</span>';
+  html += '</div>';
+
+  html += '<div style="display:flex;gap:8px;margin-top:12px;"><button class="btn-ghost" style="flex:1;" onclick="skipReviewWord()">跳过 →</button></div>';
+  html += '</div>';
+
+  var queueHtml = '<div class="card-xl p-5"><h3 style="font-size:15px;font-weight:600;margin-bottom:8px;">待复习队列</h3><div style="font-size:13px;color:var(--color-text-secondary);">剩余 ' + totalDue + ' 个单词</div>';
+  queueHtml += '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">' + dueEntries.slice(0, 30).map(function(e) {
+    var w = e.word;
+    var c = w.category || '';
+    var cls = c === 'R' ? 'rgba(72,187,120,0.12)' : c === 'L' ? 'rgba(39,163,163,0.12)' : c === 'W' ? 'rgba(159,122,234,0.12)' : 'rgba(39,163,163,0.08)';
+    return '<span style="padding:4px 10px;border-radius:12px;background:' + cls + ';font-size:12px;">' + escapeHtml(w.text) + '</span>';
+  }).join('') + '</div></div>';
+
+  html = modeHtml + html + queueHtml;
+  container.innerHTML = html;
+
+  window._reviewWord = word;
+  window._reviewOptions = options;
+  window._reviewCorrect = correctLower;
+  window._reviewAnswered = false;
+}
+
+function checkReviewAnswer(idx) {
+  if (window._reviewAnswered) return;
+  window._reviewAnswered = true;
+  var word = window._reviewWord;
+  var options = window._reviewOptions;
+  var correct = window._reviewCorrect;
+  var resultEl = document.getElementById('review-quiz-result');
+  var chosen = options[idx];
+
+  if (chosen.key === correct) {
+    word.correctCount = (word.correctCount || 0) + 1;
+    word.reviewCount = (word.reviewCount || 0) + 1;
+    var interval = Math.pow(word.reviewCount, 2) * 3600000;
+    if (interval < 7200000) interval = 7200000;
+    if (interval > 86400000 * 14) interval = 86400000 * 14;
+    word.reviewDate = Date.now() + interval;
+    document.getElementById('rq-opt-' + idx).className = 'review-option-btn correct';
+    resultEl.innerHTML = '<div style="color:var(--color-success);font-weight:600;font-size:15px;">&#10003; 正确！<span style="font-size:13px;font-weight:400;color:var(--color-text-secondary);">下次复习：' + Math.round(interval / 3600000) + '小时后</span></div>';
+    saveState();
+    setTimeout(function() { renderReview(); }, 1200);
+  } else {
+    word.wrongCount = (word.wrongCount || 0) + 1;
+    word.reviewDate = Date.now() + 600000;
+    document.getElementById('rq-opt-' + idx).className = 'review-option-btn wrong';
+    for (var oi = 0; oi < options.length; oi++) {
+      if (options[oi].key === correct) { document.getElementById('rq-opt-' + oi).className = 'review-option-btn correct'; break; }
+    }
+    var correctDisplay = word.text;
+    if (word.chinese) correctDisplay += ' (' + word.chinese + ')';
+    resultEl.innerHTML = '<div style="color:var(--color-danger);font-weight:600;">&#10007; 错误<br><span style="font-size:13px;font-weight:400;color:var(--color-text-secondary);">正确答案：<strong style="color:var(--color-oasis);">' + escapeHtml(correctDisplay) + '</strong>（10分钟后再次复习）</span></div>';
+    saveState();
+    setTimeout(function() { renderReview(); }, 2000);
+  }
+}
+
+function markReviewDone() {
+  const dueWords = getReviewWords().filter(function(e) { return e.due; }).map(function(e) { return e.word; });
+  if (dueWords.length) {
+    const word = dueWords[0];
+    word.reviewCount = (word.reviewCount || 0) + 1;
+    word.reviewDate = Date.now() + (word.reviewCount + 1) * (word.reviewCount + 1) * 3600000;
+    saveState();
+    renderReview();
+    showToast('已记住：' + word.text);
+  }
+}
+
+function skipReviewWord() {
+  var entries = getReviewWords().filter(function(e) { return e.due; });
+  if (entries.length) {
+    var word = entries[0].word;
+    word.reviewDate = Date.now() + 3600000;
+    saveState();
+    renderReview();
+  }
+}
+
+// ============================================================
+// Data management
+// ============================================================
+function renderData() {
+  const words = state.words;
+  const checkins = state.checkins.filter(function(c) { return c.taskDone; });
+  document.getElementById('data-word-count').textContent = words.length;
+  document.getElementById('data-checkin-count').textContent = checkins.length;
+  document.getElementById('data-max-streak').textContent = calcStreak();
+  const size = new Blob([JSON.stringify(state)]).size;
+  document.getElementById('data-storage-size').textContent = size > 1024 ? (size / 1024).toFixed(1) + ' KB' : size + ' B';
+}
+
+function exportCSV() {
+  const words = state.words;
+  if (!words.length) { showToast('暂无单词可导出'); return; }
+  let csv = 'text,category,context,reviewCount,timestamp\n';
+  words.forEach(function(w) {
+    const text = '"' + (w.text || '').replace(/"/g, '""') + '"';
+    const cat = '"' + (w.category || '') + '"';
+    const ctx = '"' + (w.context || '').replace(/"/g, '""') + '"';
+    csv += text + ',' + cat + ',' + ctx + ',' + (w.reviewCount || 0) + ',' + (w.timestamp || '') + '\n';
+  });
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'cet4_words_' + getToday() + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+  showToast('已导出 ' + words.length + ' 个单词');
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let current = '', inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (i + 1 < line.length && line[i + 1] === '"') { current += '"'; i++; }
+        else { inQuotes = false; }
+      } else { current += ch; }
+    } else {
+      if (ch === '"') { inQuotes = true; }
+      else if (ch === ',') { result.push(current); current = ''; }
+      else { current += ch; }
+    }
+  }
+  result.push(current);
+  return result;
+}
+
+function clearAllData() {
+  if (!confirm('确定要清除所有数据吗？此操作不可撤销！')) return;
+  if (!confirm('再次确认：所有单词和打卡记录将被永久删除。')) return;
+  state = defaultState();
+  saveState();
+  switchView(state.currentView);
+  showToast('已清除所有数据');
+}
+
+function clearAllWords() {
+  if (!confirm('确定要清空所有单词吗？')) return;
+  state.words = [];
+  saveState();
+  renderVocab();
+  renderDashboard();
+  showToast('已清空所有单词');
+}
+
+// ============================================================
+// Transcript (成绩单)
+// ============================================================
+function renderTranscript() {
+  var container = document.getElementById('transcript-content');
+  var history = state.examHistory || [];
+  var totalWords = state.words.length;
+  var totalExams = history.length;
+  var avgScore = history.length > 0 ? Math.round(history.reduce(function(s, h) { return s + h.score; }, 0) / history.length) : 0;
+  var bestScore = history.length > 0 ? Math.max.apply(null, history.map(function(h) { return h.score; })) : 0;
+
+  var html = '<div class="flex gap-3 mb-4">';
+  html += '<div class="card flex-1 p-4 text-center"><div class="stat-number">' + totalExams + '</div><div class="stat-label mt-1">考试次数</div></div>';
+  html += '<div class="card flex-1 p-4 text-center"><div class="stat-number" style="color:var(--color-oasis);">' + avgScore + '</div><div class="stat-label mt-1">平均分</div></div>';
+  html += '<div class="card flex-1 p-4 text-center"><div class="stat-number" style="color:#48BB78;">' + bestScore + '</div><div class="stat-label mt-1">最高分</div></div>';
+  html += '</div>';
+
+  html += '<div class="card-xl p-5 mb-4">';
+  html += '<div class="flex items-center justify-between mb-3"><h3 style="font-size:15px;font-weight:600;">考试记录</h3></div>';
+  if (history.length === 0) {
+    html += '<p style="color:var(--color-text-tertiary);font-size:14px;">暂无考试记录，完成真题考试后会自动记录</p>';
+  } else {
+    history.slice(0, 30).forEach(function(h) {
+      var d = new Date(h.date);
+      var dateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      var color = h.score >= 80 ? 'var(--color-success)' : h.score >= 60 ? 'var(--color-oasis)' : 'var(--color-danger)';
+      var minutes = Math.floor((h.timeSpent || 0) / 60);
+      var secs = (h.timeSpent || 0) % 60;
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--color-border);">';
+      html += '<div style="flex:1;"><div style="font-size:14px;font-weight:500;">' + escapeHtml(h.title) + '</div>';
+      html += '<div style="font-size:12px;color:var(--color-text-tertiary);">' + dateStr + ' · ' + minutes + '分' + secs + '秒 · ' + (h.correct||0) + '/' + (h.total||0) + ' 正确</div></div>';
+      html += '<div style="font-size:18px;font-weight:700;color:' + color + ';">' + (h.score||0) + '</div></div>';
+    });
+  }
+  html += '</div>';
+
+  html += '<div class="card-xl p-5 mb-4">';
+  html += '<h3 style="font-size:15px;font-weight:600;margin-bottom:8px;">学习统计</h3>';
+  html += '<div style="font-size:13px;color:var(--color-text-secondary);line-height:2;">';
+  html += '生词总数：<strong>' + totalWords + '</strong> 个<br>';
+  if (history.length > 0) {
+    var totalCorrect = history.reduce(function(s, h) { return s + (h.correct || 0); }, 0);
+    var totalTotal = history.reduce(function(s, h) { return s + (h.total || 0); }, 0);
+    var overallRate = totalTotal > 0 ? Math.round(totalCorrect / totalTotal * 100) : 0;
+    html += '总答题数：<strong>' + totalTotal + '</strong> 题（正确 ' + totalCorrect + ' 题）<br>';
+    html += '总正确率：<strong style="color:var(--color-oasis);">' + overallRate + '%</strong><br>';
+  }
+  html += '</div></div>';
+
+  html += '<div class="card-xl p-5 mb-4">';
+  html += '<h3 style="font-size:15px;font-weight:600;margin-bottom:12px;">🤖 AI 提分计划</h3>';
+  html += '<p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:12px;">请输入 DeepSeek API Key 以生成个性化提分计划<button class="btn-ghost" style="font-size:12px;padding:2px 8px;min-height:auto;" onclick="window.open(\'https://platform.deepseek.com/api_keys\',\'_blank\')">获取 Key</button></p>';
+  html += '<div style="display:flex;gap:8px;margin-bottom:12px;">';
+  var savedKey = state.settings && state.settings.deepseekKey || '';
+  html += '<input id="ds-api-key" type="password" placeholder="sk-..." style="flex:1;padding:10px 14px;border:1.5px solid #E2E8F0;border-radius:12px;font-size:14px;outline:none;font-family:var(--font-sans);" value="' + escapeHtml(savedKey) + '">';
+  html += '<button class="btn-primary" onclick="saveDSKey()">保存</button></div>';
+  html += '<button class="btn-primary w-full" onclick="generateImprovementPlan()" id="ds-plan-btn">生成提分计划</button>';
+  html += '<div id="ds-plan-result" style="margin-top:12px;display:none;"></div>';
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+function saveDSKey() {
+  var key = document.getElementById('ds-api-key').value.trim();
+  if (!state.settings) state.settings = {};
+  state.settings.deepseekKey = key;
+  saveState();
+  showToast('API Key 已保存');
+}
+
+function generateImprovementPlan() {
+  var key = state.settings && state.settings.deepseekKey;
+  if (!key) { showToast('请先输入 DeepSeek API Key'); return; }
+  var resultEl = document.getElementById('ds-plan-result');
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = '<div class="rp-card" style="text-align:center;padding:40px;"><div style="font-size:40px;margin-bottom:12px;animation:pulse 1s infinite;">📋</div><div style="font-size:15px;color:var(--color-text-secondary);">AI 正在结合你的学习数据生成提分报告...</div><div style="margin-top:12px;font-size:13px;color:var(--color-text-tertiary);">分析考试记录·评估水平·制定计划</div></div>';
+  document.getElementById('ds-plan-btn').disabled = true;
+
+  var history = state.examHistory || [];
+  var totalWords = state.words.length;
+  var correct = 0, total = 0;
+  history.forEach(function(h) { correct += h.correct || 0; total += h.total || 0; });
+  var rate = total > 0 ? Math.round(correct/total*100) : 0;
+  var avgScore = history.length > 0 ? Math.round(history.reduce(function(s,h) { return s+h.score; }, 0) / history.length) : 0;
+  var bestScore = history.length > 0 ? Math.max.apply(null, history.map(function(h) { return h.score; })) : 0;
+
+  var levelText = avgScore >= 80 ? '优秀 🏆' : avgScore >= 60 ? '良好 💪' : '待提升 📈';
+  var levelClass = avgScore >= 80 ? 'rp-level-high' : avgScore >= 60 ? 'rp-level-mid' : 'rp-level-low';
+
+  var scores = history.slice(-10).map(function(h) { return h.score; });
+  var chartBars = '';
+  var chartColors = ['#F56565','#ED8936','#ECC94B','#48BB78','#27A3A3','#27A3A3','#48BB78','#ECC94B','#ED8936','#27A3A3'];
+  scores.forEach(function(s, i) {
+    var h = Math.max(20, s * 1.1);
+    var color = s >= 80 ? '#48BB78' : s >= 60 ? '#27A3A3' : '#F56565';
+    chartBars += '<div class="rp-chart-bar" style="height:'+h+'px;background:linear-gradient(to top,'+color+',rgba('+(s>=80?'72,187,120':s>=60?'39,163,163':'245,101,101')+',0.3));"><div class="bar-val">'+s+'</div><div class="bar-label">'+(history.length-scores.length+i+1)+'</div></div>';
+  });
+
+  var prompt = '你是一名专业的英语四级(CET-4)备考导师。请根据以下学习数据生成一份个性化的提分计划：\n\n';
+  prompt += '## 学习数据\n';
+  prompt += '- 已完成试卷数：' + history.length + '\n';
+  prompt += '- 平均分：' + avgScore + '\n';
+  prompt += '- 最高分：' + bestScore + '\n';
+  prompt += '- 总正确率：' + rate + '%\n';
+  prompt += '- 生词本词数：' + totalWords + '\n';
+  prompt += '- 各次成绩：' + scores.join(', ') + '\n\n';
+  prompt += '请严格按以下5个板块输出（用 === 作为分隔符标记）：\n\n';
+  prompt += '=== 当前水平评估 ===\n分析优势和薄弱环节，给出总体评价\n\n';
+  prompt += '=== 各题型目标分数 ===\n听力、阅读、写作、翻译各建议目标分数及提升空间\n\n';
+  prompt += '=== 每日学习计划 ===\n具体到每天的任务安排（词汇、听力、阅读、写作），用 - 列表\n\n';
+  prompt += '=== 备考策略 ===\n针对不同题型的提分技巧和学习方法，用 - 列表\n\n';
+  prompt += '=== 推荐资源 ===\n推荐资料、APP、网站等，用 - 列表\n\n请用中文回复，保持鼓励和积极的语气。';
+
+  fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+    body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: prompt }], max_tokens: 2048, temperature: 0.7 })
+  })
+  .then(function(r) { if (!r.ok) throw new Error('API请求失败'); return r.json(); })
+  .then(function(data) {
+    var content = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content || '';
+    if (!content) throw new Error('无返回内容');
+
+    var sections = content.split(/===/).map(function(s) { return s.trim(); }).filter(function(s) { return s; });
+    var sectionConfig = {
+      '当前水平评估': { icon: '📊', color: '#27A3A3' },
+      '各题型目标分数': { icon: '🎯', color: '#48BB78' },
+      '每日学习计划': { icon: '📅', color: '#ED8936' },
+      '备考策略': { icon: '💡', color: '#7C3AED' },
+      '推荐资源': { icon: '📚', color: '#E53E3E' }
+    };
+
+    var sectionHtml = '';
+    sections.forEach(function(sec) {
+      var title = '';
+      var body = sec;
+      for (var key in sectionConfig) {
+        if (sec.indexOf(key) === 0) {
+          title = key;
+          body = sec.substring(key.length).trim();
+          break;
+        }
+      }
+      if (!title) {
+        var firstLine = sec.split('\n')[0].replace(/[#*]/g, '').trim();
+        if (firstLine.length < 20) { title = firstLine; body = sec.substring(firstLine.length).trim(); }
+        else { title = '分析建议'; }
+      }
+      var cfg = sectionConfig[title] || { icon: '📌', color: '#27A3A3' };
+      var formattedBody = body.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      formattedBody = formattedBody.replace(/^- (.+)/gm, '<li>$1</li>');
+      formattedBody = formattedBody.replace(/(<li>.*?<\/li>)/gs, function(m) {
+        if (m.split('</li>').length - 1 > 1) return '<ul style="padding-left:18px;margin:6px 0;">' + m + '</ul>';
+        return m;
+      });
+      formattedBody = formattedBody.replace(/\n{2,}/g, '<br>');
+      formattedBody = formattedBody.replace(/\n/g, '<br>');
+
+      sectionHtml += '<div class="rp-section" style="border-left-color:' + cfg.color + ';"><div class="rp-section-icon">' + cfg.icon + '</div><div class="rp-section-body"><strong style="font-size:15px;color:' + cfg.color + ';">' + title + '</strong><br>' + formattedBody + '</div></div>';
+    });
+
+    var totalCorrect = history.reduce(function(s, h) { return s + (h.correct || 0); }, 0);
+    var totalTotal = history.reduce(function(s, h) { return s + (h.total || 0); }, 0);
+    var overallRate = totalTotal > 0 ? Math.round(totalCorrect / totalTotal * 100) : 0;
+
+    var reportHtml = '<div class="rp-card" style="background:linear-gradient(135deg,#27A3A3,#1E6B6B);color:#fff;text-align:center;padding:32px 24px;">';
+    reportHtml += '<div style="font-size:48px;margin-bottom:8px;">📋</div>';
+    reportHtml += '<div style="font-size:22px;font-weight:800;letter-spacing:-0.3px;">CET-4 个人提分报告</div>';
+    reportHtml += '<div style="font-size:13px;opacity:0.8;margin-top:4px;">' + new Date().toLocaleDateString('zh-CN') + ' 生成</div>';
+    reportHtml += '<div style="margin-top:16px;"><span class="rp-level-badge ' + levelClass + '">' + levelText + '</span></div>';
+    reportHtml += '</div>';
+
+    reportHtml += '<div class="rp-card"><h4>📈 成绩趋势</h4>';
+    if (scores.length > 1) {
+      reportHtml += '<div class="rp-score-chart">' + chartBars + '</div>';
+    } else {
+      reportHtml += '<div style="text-align:center;padding:12px;color:var(--color-text-tertiary);font-size:14px;">完成更多考试后将显示成绩趋势图</div>';
+    }
+    reportHtml += '<hr><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;">';
+    reportHtml += '<div><div style="font-size:20px;font-weight:700;color:var(--color-oasis);">' + history.length + '</div><div style="font-size:11px;color:var(--color-text-tertiary);">考试次数</div></div>';
+    reportHtml += '<div><div style="font-size:20px;font-weight:700;color:#48BB78;">' + avgScore + '</div><div style="font-size:11px;color:var(--color-text-tertiary);">平均分</div></div>';
+    reportHtml += '<div><div style="font-size:20px;font-weight:700;color:#ED8936;">' + bestScore + '</div><div style="font-size:11px;color:var(--color-text-tertiary);">最高分</div></div>';
+    reportHtml += '<div><div style="font-size:20px;font-weight:700;color:#7C3AED;">' + overallRate + '%</div><div style="font-size:11px;color:var(--color-text-tertiary);">正确率</div></div>';
+    reportHtml += '</div>';
+    reportHtml += '<div class="rp-progress-bar" style="margin-top:12px;"><div class="rp-progress-fill" style="width:' + overallRate + '%;background:linear-gradient(90deg,#27A3A3,#48BB78);"></div></div>';
+    reportHtml += '</div>';
+
+    reportHtml += '<div class="rp-card"><h4>🎯 思维导图</h4><div class="rp-mindmap"><div class="rp-mindmap-center">' + (history.length > 0 ? avgScore >= 60 ? '稳步提升 → 冲刺高分' : '夯实基础 → 突破瓶颈' : '开始学习之旅') + '</div>';
+    var mapNodes = [
+      { label: '词汇积累', color: '#27A3A3', bg: 'rgba(39,163,163,0.1)' },
+      { label: '听力训练', color: '#48BB78', bg: 'rgba(72,187,120,0.1)' },
+      { label: '阅读提升', color: '#ED8936', bg: 'rgba(237,137,54,0.1)' },
+      { label: '写作突破', color: '#7C3AED', bg: 'rgba(159,122,234,0.1)' },
+      { label: '翻译精练', color: '#E53E3E', bg: 'rgba(229,62,62,0.1)' },
+      { label: '真题实战', color: '#27A3A3', bg: 'rgba(39,163,163,0.1)' }
+    ];
+    mapNodes.forEach(function(n) {
+      reportHtml += '<div class="rp-mindmap-node" style="border-color:' + n.color + ';background:' + n.bg + ';color:' + n.color + ';">' + n.label + '</div>';
+    });
+    reportHtml += '</div></div>';
+
+    reportHtml += '<div class="rp-card"><h4>📊 详细分析</h4>' + sectionHtml + '</div>';
+
+    var tips = [];
+    if (avgScore < 60) tips.push('重点攻克词汇和听力基础，每天至少背30个单词+听15分钟真题');
+    if (avgScore >= 60 && avgScore < 80) tips.push('在保持优势的同时，针对性突破薄弱题型，建议每周完成2套真题');
+    if (avgScore >= 80) tips.push('保持状态的同时，重点提升写作和翻译的表达质量，冲刺满分');
+    if (totalWords < 50) tips.push('生词本词数较少，建议在做题过程中多双击查词积累词汇');
+    if (history.length < 3) tips.push('建议先完成3-5套真题，获取充足数据后再生成更精准的提分计划');
+    reportHtml += '<div class="rp-tip"><strong>💡 小贴士：</strong><br>' + tips.join('<br>') + '</div>';
+
+    reportHtml += '<div style="text-align:center;padding:12px;font-size:12px;color:var(--color-text-tertiary);">报告由 DeepSeek AI 基于你的学习数据自动生成 · ' + new Date().toLocaleDateString('zh-CN') + '</div>';
+
+    resultEl.innerHTML = reportHtml;
+  })
+  .catch(function(err) {
+    resultEl.innerHTML = '<div class="rp-card" style="border-left:4px solid #F56565;"><div style="text-align:center;padding:20px;"><div style="font-size:36px;margin-bottom:8px;">😅</div><div style="font-size:16px;font-weight:600;color:var(--color-danger);margin-bottom:8px;">报告生成失败</div><div style="font-size:14px;color:var(--color-text-secondary);">' + escapeHtml(err.message || '请检查 API Key 是否正确或网络连接') + '</div></div></div>';
+  })
+  .finally(function() { document.getElementById('ds-plan-btn').disabled = false; });
+}
+document.addEventListener('DOMContentLoaded', function() {
+  state = loadState();
+  switchView(state.currentView || 'dashboard');
+  document.getElementById('import-input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const text = ev.target.result;
+      const lines = text.replace(/^\uFEFF/, '').split('\n').filter(function(l) { return l.trim(); });
+      if (lines.length < 2) { showToast('CSV 文件为空'); e.target.value = ''; return; }
+      const header = lines[0].toLowerCase().split(',').map(function(h) { return h.trim(); });
+      const textIdx = header.indexOf('text');
+      const catIdx = header.indexOf('category');
+      const ctxIdx = header.indexOf('context');
+      if (textIdx === -1) { showToast('CSV 缺少 text 列'); e.target.value = ''; return; }
+      let added = 0, skipped = 0;
+      for (let i = 1; i < lines.length; i++) {
+        const cols = parseCSVLine(lines[i]);
+        const t = (cols[textIdx] || '').trim().toLowerCase();
+        if (!t) continue;
+        if (state.words.some(function(w) { return w.text === t; })) { skipped++; continue; }
+        state.words.unshift({
+          id: genId(), text: t, category: (catIdx >= 0 && ['L','R','W'].includes(cols[catIdx]) ? cols[catIdx] : ''),
+          context: ctxIdx >= 0 ? (cols[ctxIdx] || '') : '', timestamp: Date.now(), reviewCount: 0
+        });
+        added++;
+      }
+      saveState();
+      renderVocab();
+      renderDashboard();
+      showToast('导入完成：新增 ' + added + '，跳过 ' + skipped + ' 个重复');
+      e.target.value = '';
+    };
+    reader.readAsText(file, 'UTF-8');
+  });
+});
+</script>
+</body>
+</html>
