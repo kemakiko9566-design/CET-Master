@@ -76,7 +76,7 @@ CET Master 就是为**解决这些问题**而生的。
 
 ### 方式一：直接使用
 
-用浏览器打开 `CET4-Master-OS.html` 即可，所有功能完整可用。
+用浏览器打开 `index.html` 即可，所有功能完整可用。
 
 ### 方式二：本地服务器
 
@@ -110,7 +110,7 @@ python -m http.server 8080
 
 ```
 CET Master/
-├── CET4-Master-OS.html      # 主程序（单页应用）
+├── index.html                # 主程序（单页应用）
 ├── exam_data.js             # 真题数据
 ├── CET-4 真题/              # 真题 PDF 和 MP3 音频
 │   ├── cet4_2019/

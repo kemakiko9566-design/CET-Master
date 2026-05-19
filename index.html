@@ -735,6 +735,12 @@ function renderExam() {
   const container = document.getElementById('exam-content');
   ensureExamData(function() {
     if (state.papers.length < EXAM_DATA.length) lazyInitPapers();
+    var inProgCount = 0;
+    state.papers.forEach(function(p) { if (p.status === 'in_progress') inProgCount++; });
+    if (inProgCount !== 1) {
+      state.papers.forEach(function(p) { if (p.status === 'in_progress') p.status = 'unstarted'; });
+      saveState();
+    }
     if (state.papers.length === 0) {
       container.innerHTML = '<div class="card-xl" style="text-align:center;padding:60px 24px;"><div style="font-size:48px;margin-bottom:16px;">📝</div><p style="color:var(--color-text-secondary);">暂无试卷，请先加载真题数据</p></div>';
       return;
@@ -750,6 +756,7 @@ function renderExam() {
 let examInterval = null;
 
 function startExam(paperId) {
+  state.papers.forEach(function(p) { if (p.status === 'in_progress') p.status = 'unstarted'; });
   state.examTimer = { running: true, elapsed: 0, paperId, lastTick: Date.now(), startTime: Date.now() };
   saveState();
   const paper = state.papers.find(p => p.id === paperId);
@@ -2701,6 +2708,8 @@ function renderReview() {
   });
   html += '</div>';
 
+  html += '<button class="btn-primary" id="review-next-btn" style="display:none;width:100%;margin-top:8px;" onclick="renderReview()">下一题 →</button>';
+
   html += '<div style="margin-top:16px;padding-top:14px;border-top:1px solid #EDF2F7;font-size:12px;color:var(--color-text-tertiary);display:flex;justify-content:space-between;">';
   html += '<span>正确 ' + correctCount + ' 次 / 错误 ' + wrongCount + ' 次</span>';
   html += '<span>复习 ' + (word.reviewCount || 0) + ' 次</span>';
@@ -2744,8 +2753,8 @@ function checkReviewAnswer(idx) {
     word.reviewDate = Date.now() + interval;
     document.getElementById('rq-opt-' + idx).className = 'review-option-btn correct';
     resultEl.innerHTML = '<div style="color:var(--color-success);font-weight:600;font-size:15px;">&#10003; 正确！<span style="font-size:13px;font-weight:400;color:var(--color-text-secondary);">下次复习：' + Math.round(interval / 3600000) + '小时后</span></div>';
+    document.getElementById('review-next-btn').style.display = 'block';
     saveState();
-    setTimeout(function() { renderReview(); }, 1200);
   } else {
     word.wrongCount = (word.wrongCount || 0) + 1;
     word.reviewDate = Date.now() + 600000;
@@ -2756,8 +2765,8 @@ function checkReviewAnswer(idx) {
     var correctDisplay = word.text;
     if (word.chinese) correctDisplay += ' (' + word.chinese + ')';
     resultEl.innerHTML = '<div style="color:var(--color-danger);font-weight:600;">&#10007; 错误<br><span style="font-size:13px;font-weight:400;color:var(--color-text-secondary);">正确答案：<strong style="color:var(--color-oasis);">' + escapeHtml(correctDisplay) + '</strong>（10分钟后再次复习）</span></div>';
+    document.getElementById('review-next-btn').style.display = 'block';
     saveState();
-    setTimeout(function() { renderReview(); }, 2000);
   }
 }
 
