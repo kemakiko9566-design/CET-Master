@@ -8,14 +8,26 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 :root {
-  --color-oasis: #27A3A3; --color-oasis-dark: #1E8282; --color-oasis-light: rgba(39,163,163,0.08);
-  --color-deep: #2D3748; --color-bg: #F7FAFC; --color-card: #FFFFFF;
-  --color-text: #1A202C; --color-text-secondary: #718096; --color-text-tertiary: #A0AEC0;
-  --color-border: rgba(0,0,0,0.05); --color-success: #48BB78; --color-danger: #F56565;
-  --color-cat-L: #27A3A3; --color-cat-R: #48BB78; --color-cat-W: #9F7AEA; --color-cat-none: #A0AEC0;
+  --color-primary: #2563EB;
+  --color-primary-dark: #1D4ED8;
+  --color-primary-light: rgba(37,99,235,0.08);
+  --color-accent: #F59E0B;
+  --color-bg: #F8FAFC;
+  --color-bg-alt: #F1F5F9;
+  --color-card: #FFFFFF;
+  --color-text: #111827;
+  --color-text-secondary: #6B7280;
+  --color-text-tertiary: #9CA3AF;
+  --color-border: rgba(0,0,0,0.06);
+  --color-success: #10B981;
+  --color-danger: #EF4444;
+  --color-oasis: #2563EB;
+  --color-oasis-dark: #1D4ED8;
+  --color-oasis-light: rgba(37,99,235,0.08);
+  --color-deep: #111827;
   --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 24px; --radius-2xl: 32px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04); --shadow-md: 0 4px 12px rgba(0,0,0,0.06); --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
-  --font-sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04); --shadow-md: 0 4px 12px rgba(0,0,0,0.06); --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+  --font-sans: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
   --safe-top: env(safe-area-inset-top,0px); --safe-bottom: env(safe-area-inset-bottom,0px);
   --sidebar-w: 220px;
 }
@@ -54,6 +66,122 @@ body { display:flex; min-height:100vh; }
 .heat-cell-exam-mid { background:linear-gradient(135deg,#27A3A3,#1E8282) !important; }
 .heat-cell-exam-low { background:linear-gradient(135deg,#F56565,#E53E3E) !important; }
 .heat-cell-exam::after { content:'★';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:7px;color:rgba(255,255,255,0.9);line-height:1; }
+
+/* ---- 实践模块：Spotify × Duolingo × Notion 设计 ---- */
+/* Hero Banner */
+.lh-hero { background:linear-gradient(135deg,#1E3A5F 0%,#2563EB 50%,#1D4ED8 100%); border-radius:28px; padding:28px 24px; color:#fff; position:relative; overflow:hidden; margin-bottom:24px; }
+.lh-hero::before { content:''; position:absolute; inset:0; background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E"); opacity:0.3; pointer-events:none; }
+.lh-hero-wave { position:absolute; bottom:-20px; right:-20px; width:200px; height:200px; opacity:0.1; }
+.lh-hero-wave svg { width:100%; height:100%; }
+.lh-hero-content { position:relative; z-index:1; }
+.lh-hero-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.15); backdrop-filter:blur(10px); padding:4px 14px; border-radius:20px; font-size:12px; font-weight:500; margin-bottom:12px; }
+.lh-hero-title { font-size:24px; font-weight:800; letter-spacing:-0.5px; line-height:1.3; margin-bottom:4px; }
+.lh-hero-sub { font-size:14px; opacity:0.8; margin-bottom:16px; }
+.lh-hero-meta { display:flex; gap:20px; margin-bottom:20px; font-size:13px; }
+.lh-hero-meta-item { display:flex; align-items:center; gap:6px; opacity:0.85; }
+.lh-hero-meta-item svg { width:16px; height:16px; }
+.lh-hero-btn { display:inline-flex; align-items:center; gap:8px; background:#fff; color:#2563EB; border:none; border-radius:100px; padding:12px 28px; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; min-height:48px; }
+.lh-hero-btn:hover { transform:scale(1.02); box-shadow:0 8px 24px rgba(0,0,0,0.15); }
+
+/* 分类毛玻璃卡片 */
+.lh-cat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:28px; }
+.lh-cat-card { background:rgba(255,255,255,0.7); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.3); border-radius:24px; padding:20px; cursor:pointer; transition:all 0.25s cubic-bezier(0.4,0,0.2,1); box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+.lh-cat-card:hover { transform:translateY(-4px); box-shadow:0 12px 32px rgba(37,99,235,0.12); border-color:rgba(37,99,235,0.2); }
+.lh-cat-card:active { transform:scale(0.97); }
+.lh-cat-icon { width:44px; height:44px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:10px; }
+.lh-cat-name { font-size:15px; font-weight:700; margin-bottom:2px; }
+.lh-cat-count { font-size:12px; color:var(--color-text-tertiary); }
+
+/* 歌单式题目卡片 */
+.lh-paper-list { display:flex; flex-direction:column; gap:10px; }
+.lh-paper-card { background:var(--color-card); border-radius:20px; padding:18px; box-shadow:var(--shadow-sm); cursor:pointer; transition:all 0.2s cubic-bezier(0.4,0,0.2,1); border:1px solid var(--color-border); display:flex; align-items:center; gap:16px; }
+.lh-paper-card:hover { transform:translateX(4px); box-shadow:var(--shadow-md); border-color:rgba(37,99,235,0.15); }
+.lh-paper-card:active { transform:scale(0.99); }
+.lh-paper-cover { width:48px; height:48px; border-radius:14px; background:linear-gradient(135deg,rgba(37,99,235,0.1),rgba(37,99,235,0.05)); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+.lh-paper-info { flex:1; min-width:0; }
+.lh-paper-title { font-size:14px; font-weight:600; margin-bottom:4px; }
+.lh-paper-meta { display:flex; gap:6px; flex-wrap:wrap; }
+.lh-paper-tag { font-size:10px; padding:2px 8px; border-radius:6px; background:var(--color-bg-alt); color:var(--color-text-tertiary); font-weight:500; }
+.lh-paper-progress { text-align:right; flex-shrink:0; min-width:60px; }
+.lh-paper-pct { font-size:13px; font-weight:700; color:var(--color-text); }
+.lh-paper-bar { width:60px; height:4px; border-radius:2px; background:var(--color-bg-alt); overflow:hidden; margin-top:4px; margin-left:auto; }
+.lh-paper-bar-fill { height:100%; border-radius:2px; background:#2563EB; transition:width 0.4s; }
+
+/* 分类标题 */
+.lh-section-title { font-size:16px; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.lh-section-title span { font-size:12px; font-weight:400; color:var(--color-text-tertiary); }
+
+/* 毛玻璃卡片公共 */
+.glass-card { background:rgba(255,255,255,0.7); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.3); border-radius:24px; }
+
+/* 精听页面播放器 */
+.lp-player { background:#111827; padding:20px 24px; display:flex; align-items:center; gap:16px; flex-shrink:0; }
+.lp-player-cover { width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg,#2563EB,#1D4ED8); display:flex; align-items:center; justify-content:center; font-size:28px; flex-shrink:0; }
+.lp-player-info { flex:1; min-width:0; }
+.lp-player-title { font-size:14px; font-weight:600; color:#fff; }
+.lp-player-source { font-size:11px; color:rgba(255,255,255,0.5); margin-top:2px; }
+.lp-player-controls { display:flex; align-items:center; gap:12px; }
+.lp-btn { width:36px; height:36px; border-radius:50%; border:none; background:rgba(255,255,255,0.1); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+.lp-btn:hover { background:rgba(255,255,255,0.2); }
+.lp-btn-play { width:44px; height:44px; background:#fff; color:#111827; }
+.lp-btn-play:hover { background:rgba(255,255,255,0.9); transform:scale(1.05); }
+.lp-progress { width:100%; padding:0 24px 8px; background:#111827; flex-shrink:0; }
+.lp-progress-bar { height:4px; border-radius:2px; background:rgba(255,255,255,0.15); cursor:pointer; position:relative; }
+.lp-progress-fill { height:100%; border-radius:2px; background:#fff; transition:width 0.1s linear; }
+.lp-progress-time { display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,0.4); margin-top:4px; }
+.lp-speed { display:flex; gap:6px; }
+.lp-speed-btn { padding:2px 10px; border-radius:6px; border:none; font-size:11px; font-weight:600; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.5); cursor:pointer; transition:all 0.15s; }
+.lp-speed-btn.active { background:rgba(255,255,255,0.15); color:#fff; }
+
+/* 精听三栏布局 */
+.lp-body { flex:1; display:flex; overflow:hidden; background:var(--color-bg); }
+.lp-subtitles { flex:1; overflow-y:auto; padding:20px 24px; }
+.lp-sidebar { width:280px; border-left:1px solid var(--color-border); display:flex; flex-direction:column; background:var(--color-card); }
+.lp-sidebar-tabs { display:flex; border-bottom:1px solid var(--color-border); }
+.lp-sidebar-tab { flex:1; padding:10px; font-size:12px; font-weight:600; color:var(--color-text-tertiary); background:none; border:none; cursor:pointer; transition:all 0.15s; text-align:center; }
+.lp-sidebar-tab.active { color:#2563EB; border-bottom:2px solid #2563EB; }
+.lp-sidebar-content { flex:1; overflow-y:auto; padding:16px; }
+.lp-word-card { padding:12px; border-radius:14px; background:var(--color-bg-alt); margin-bottom:8px; cursor:pointer; transition:all 0.15s; }
+.lp-word-card:hover { background:rgba(37,99,235,0.06); }
+.lp-word-text { font-size:15px; font-weight:600; }
+.lp-word-def { font-size:12px; color:var(--color-text-secondary); margin-top:2px; }
+
+/* 字幕句子 */
+.ls-item { padding:8px 14px; border-radius:12px; cursor:pointer; transition:all 0.25s; margin-bottom:4px; border-left:3px solid transparent; }
+.ls-item:hover { background:rgba(37,99,235,0.04); }
+.ls-item.active { background:rgba(37,99,235,0.08); border-left-color:#2563EB; }
+.ls-item.active .ls-text { color:#2563EB; font-weight:600; }
+.ls-item.past { opacity:0.35; }
+.ls-item.past .ls-text { color:var(--color-text-tertiary); }
+.ls-item.future { opacity:0.55; }
+/* transcript 句级高亮 — 逐词累积 */
+.ls-transcript-line { margin-bottom:4px; padding:6px 10px; border-radius:8px; border-left:3px solid transparent; transition:all 0.25s; cursor:pointer; }
+.ls-transcript-line:hover { background:rgba(37,99,235,0.04); }
+.ls-transcript-line.past { background:rgba(37,99,235,0.06); border-left-color:rgba(37,99,235,0.2); }
+.ls-transcript-line.active { background:rgba(37,99,235,0.1); border-left-color:#2563EB; }
+.ls-word-done { background:rgba(37,99,235,0.08); border-radius:3px; padding:0 2px; }
+.ls-word-now { color:#2563EB; font-weight:700; }
+.ls-text { font-size:15px; line-height:1.7; transition:all 0.25s; }
+.ls-time { font-size:11px; color:var(--color-text-tertiary); margin-bottom:2px; font-variant-numeric:tabular-nums; }
+.ls-word-highlight { color:#2563EB; font-weight:600; background:rgba(37,99,235,0.1); border-radius:3px; padding:0 2px; }
+
+/* 其他保持一致的 practice 样式 */
+.practice-session-overlay { position:fixed; top:0; left:0; right:0; bottom:0; z-index:300; display:none; flex-direction:column; }
+.practice-session-overlay.active { display:flex !important; }
+.practice-opt-btn { display:block; width:100%; padding:14px 16px; margin-bottom:10px; border-radius:14px; border:1.5px solid #E5E7EB; background:var(--color-card); font-size:15px; line-height:1.5; text-align:left; cursor:pointer; transition:all 0.15s ease; font-family:var(--font-sans); color:var(--color-text); }
+.practice-opt-btn:hover { border-color:#2563EB; background:rgba(37,99,235,0.04); }
+.practice-opt-btn:active { transform:scale(0.98); }
+.practice-opt-btn.correct { border-color:#10B981; background:rgba(16,185,129,0.1); color:#065F46; }
+.practice-opt-btn.wrong { border-color:#EF4444; background:rgba(239,68,68,0.08); color:#991B1B; }
+.practice-opt-btn .opt-letter { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:#F3F4F6; font-weight:700; font-size:13px; margin-right:12px; flex-shrink:0; }
+.practice-progress-dot { width:8px; height:8px; border-radius:50%; background:#E5E7EB; transition:all 0.2s ease; }
+.practice-progress-dot.active { background:#2563EB; }
+.practice-progress-dot.answered { background:#10B981; }
+.practice-sub-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:16px; background:#F3F4F6; font-size:12px; font-weight:500; cursor:pointer; transition:all 0.15s; }
+.practice-sub-badge:active { transform:scale(0.95); }
+.practice-sub-pct { font-weight:600; font-size:11px; }
+@keyframes practiceSlideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+.practice-animate { animation:practiceSlideUp 0.3s ease; }
 .word-tag { display:inline-flex; align-items:center; padding:6px 14px; border-radius:20px; font-size:14px; font-weight:500; cursor:pointer; margin:4px; user-select:none; min-height:36px; }
 .word-tag:active { transform:scale(0.92); }
 .word-tag-none { background:#EDF2F7; color:var(--color-text-secondary); } .word-tag-L { background:rgba(39,163,163,0.1); color:var(--color-cat-L); }
@@ -119,6 +247,9 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; appearance:
 .writ-answer { width:100%;min-height:160px;padding:14px;border:1.5px solid #E2E8F0;border-radius:14px;font-size:15px;line-height:1.8;resize:vertical;font-family:var(--font-sans);background:#fff;transition:border-color 0.15s;outline:none; }
 .writ-answer:focus { border-color:var(--color-oasis);box-shadow:0 0 0 3px rgba(39,163,163,0.08); }
 .writ-answer::placeholder { color:#CBD5E0; }
+/* 精听单词级高亮（保留兼容） */
+.listen-word { transition: color 0.08s, background 0.08s; border-radius: 3px; padding: 0 1px; }
+.listen-word.active { color: #2563EB; background: rgba(37,99,235,0.12); font-weight: 600; }
 .ai-result { padding:16px 18px;background:#F7FAFC;border-radius:14px;border:1px solid #E8ECF0;font-size:14px;line-height:1.8; }
 .ai-result h5 { font-size:14px;font-weight:600;color:var(--color-oasis);margin:12px 0 6px; }
 .ai-result h5:first-child { margin-top:0; }
@@ -168,8 +299,8 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; appearance:
     <button class="nav-item" data-view="exam" onclick="switchView('exam')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>真题考试
     </button>
-    <button class="nav-item" data-view="exambrowse" onclick="switchView('exambrowse')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>真题浏览
+    <button class="nav-item" data-view="practice" onclick="switchView('practice')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>精听
     </button>
     <button class="nav-item" data-view="transcript" onclick="switchView('transcript')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6M9 16h6M9 8h6"/><rect x="4" y="2" width="16" height="20" rx="2"/></svg>成绩单
@@ -318,6 +449,49 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; appearance:
   </div>
 </div>
 
+<!-- VIEW: Practice (Listening Library) -->
+<div id="view-practice" class="view" style="max-width:860px;">
+  <!-- Hero Banner -->
+  <div class="lh-hero">
+    <div class="lh-hero-wave">
+      <svg viewBox="0 0 200 200" fill="none"><path d="M0 100 Q50 80 100 100 Q150 120 200 100 L200 200 L0 200 Z" fill="white"/><path d="M0 130 Q50 110 100 130 Q150 150 200 130 L200 200 L0 200 Z" fill="white" opacity="0.3"/></svg>
+    </div>
+    <div class="lh-hero-content">
+      <div class="lh-hero-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        今日精听
+      </div>
+      <div class="lh-hero-title" id="lh-hero-title">随机一套真题听力</div>
+      <div class="lh-hero-sub">点击「开始学习」进入沉浸式精听体验</div>
+      <div class="lh-hero-meta">
+        <span class="lh-hero-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span id="lh-hero-time">预计 15 分钟</span>
+        </span>
+        <span class="lh-hero-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          <span id="lh-hero-words">词汇量 4000+</span>
+        </span>
+        <span class="lh-hero-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span id="lh-hero-diff">难度 ★★★★☆</span>
+        </span>
+      </div>
+      <button id="lh-hero-start" class="lh-hero-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        开始学习
+      </button>
+    </div>
+  </div>
+
+  <!-- Category Grid -->
+  <div class="lh-cat-grid" id="lh-cat-grid"></div>
+
+  <!-- Paper List -->
+  <div class="lh-section-title">全部真题 <span id="lh-total-count">加载中...</span></div>
+  <div class="lh-paper-list" id="lh-paper-list"></div>
+</div>
+
 <!-- VIEW: Vocab -->
 <div id="view-vocab" class="view">
   <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">生词本</h2>
@@ -403,8 +577,8 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; appearance:
   <button class="tab-btn" onclick="switchView('exam')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>真题</span>
   </button>
-  <button class="tab-btn" onclick="switchView('exambrowse')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>浏览</span>
+  <button class="tab-btn" onclick="switchView('practice')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><span>精听</span>
   </button>
   <button class="tab-btn" onclick="switchView('vocab')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/></svg><span>生词</span>
@@ -412,6 +586,57 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; appearance:
   <button class="tab-btn" onclick="switchView('data')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg><span>数据</span>
   </button>
+</div>
+
+<!-- Practice Session Overlay (Spotify-like Player) -->
+<div id="practice-session" class="practice-session-overlay">
+  <!-- Player Bar -->
+  <div class="lp-player">
+    <button id="ps-back" class="lp-btn" style="background:none;width:auto;padding:0 4px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </button>
+    <div class="lp-player-cover">🎧</div>
+    <div class="lp-player-info">
+      <div class="lp-player-title" id="ps-title">听力练习</div>
+      <div class="lp-player-source" id="ps-source">CET-4</div>
+    </div>
+    <div class="lp-player-controls">
+      <button id="ps-prev" class="lp-btn"><svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px;"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2"/></svg></button>
+      <button id="ps-play" class="lp-btn lp-btn-play"><svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px;"><polygon points="8 5 19 12 8 19 8 5"/></svg></button>
+      <button id="ps-next" class="lp-btn"><svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px;"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/></svg></button>
+      <button id="ps-transcript-btn" class="lp-btn" title="查看原文" style="font-size:13px;padding:0 10px;width:auto;border-radius:8px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);">📄 原文</button>
+      <div class="lp-speed"><button class="lp-speed-btn active" data-speed="1">1x</button><button class="lp-speed-btn" data-speed="1.25">1.25x</button><button class="lp-speed-btn" data-speed="0.75">0.75x</button></div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="lp-progress">
+    <div class="lp-progress-bar"><div class="lp-progress-fill" id="ps-progress-fill" style="width:0%;"></div></div>
+    <div class="lp-progress-time"><span id="ps-time-current">0:00</span><span id="ps-time-total">--:--</span></div>
+  </div>
+
+  <!-- Body: 3-column -->
+  <div class="lp-body">
+    <!-- Subtitles -->
+    <div class="lp-subtitles" id="ps-subtitles">
+      <div id="ps-question-area"></div>
+    </div>
+
+    <!-- Right Sidebar: Notes + Vocab -->
+    <div class="lp-sidebar">
+      <div class="lp-sidebar-tabs">
+        <button class="lp-sidebar-tab active" data-tab="notes">📝 笔记</button>
+        <button class="lp-sidebar-tab" data-tab="vocab">📖 生词</button>
+        <button class="lp-sidebar-tab" data-tab="wrong">❌ 错题</button>
+        <button class="lp-sidebar-tab" data-tab="ai">✨ AI</button>
+      </div>
+      <div class="lp-sidebar-content" id="ps-sidebar-content">
+        <div style="text-align:center;padding:40px 0;color:var(--color-text-tertiary);font-size:14px;">
+          开始精听后，这里将显示<br>笔记 · 生词 · AI 解析
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Word Lookup Popup -->
@@ -524,11 +749,12 @@ function switchView(view) {
   if (el) el.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.view === view));
   document.querySelectorAll('.tab-btn').forEach((t,i) => {
-    const views = ['dashboard','exam','exambrowse','vocab','data','transcript'];
+    const views = ['dashboard','exam','practice','vocab','data','transcript'];
     t.classList.toggle('active', views[i] === view);
   });
   const fn = 'render' + view.charAt(0).toUpperCase() + view.slice(1);
   if (window[fn]) window[fn]();
+  if (view === 'practice') renderListeningLibrary();
 }
 
 // ============================================================
@@ -3085,6 +3311,359 @@ function generateImprovementPlan() {
   })
   .finally(function() { document.getElementById('ds-plan-btn').disabled = false; });
 }
+
+// ============================================================
+// ListeningLib - 精听图书馆
+// ============================================================
+const ListeningLib = {
+  _ready: false, _data: null, _listeningPapers: [], _currentSubKey: null,
+  _audio: null, _playing: false, _paperId: '', _secIdx: 0, _speed: 1,
+  _fullText: '', _transcriptShowing: false,
+  _alignedData: null, _loadedAligned: false,
+
+  CATS: [
+    { key:'news', label:'短篇新闻', icon:'📡', color:'#2563EB', desc:'新闻听力', count:0 },
+    { key:'conversation', label:'长对话', icon:'💬', color:'#10B981', desc:'日常对话', count:0 },
+    { key:'passage', label:'讲座演讲', icon:'🎙️', color:'#F59E0B', desc:'学术讲座', count:0 }
+  ],
+
+  init() { this._answerKeys = this.parseListeningKeys(); this.loadData(); this.setupEvents(); },
+
+  getMp3Path(paperId) {
+    const m = paperId.match(/cet4_(\d{4})_(\d{2})_(\d+)/i);
+    return m ? `CET-4 真题/cet4_${m[1]}/cet4_${m[1]}_${m[2]}_${m[3]}.mp3` : '';
+  },
+
+  getFullText(paperId) {
+    if (typeof EXAM_DATA === 'undefined') return '';
+    const entry = EXAM_DATA.find(e => e.file && e.file.startsWith(paperId));
+    return entry ? entry.text : '';
+  },
+
+  getSectionText(fullText, secIdx) {
+    if (!fullText) return '';
+    const parts = fullText.split(/(?=Part\s+(?:I{1,3}|IV|V|VI?)\b)/i);
+    const label = ['Part I', 'Part II', 'Part III'][secIdx];
+    for (const p of parts) { if (p.trim().startsWith(label)) return p.trim(); }
+    return fullText.slice(0, 2000);
+  },
+
+  parseListeningKeys() {
+    if (typeof EXAM_DATA === 'undefined') return {};
+    const keys = {};
+    EXAM_DATA.forEach(entry => {
+      if (!entry.keys) return;
+      const paperId = (entry.file || '').replace(/\.pdf$/i, '');
+      const lines = entry.keys.split('\n');
+      let inListening = false;
+      const qMap = {};
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (/^Part\s+II/i.test(trimmed)) { inListening = true; continue; }
+        if (/^Part\s+III/i.test(trimmed)) { inListening = false; continue; }
+        if (!inListening || !trimmed) continue;
+        const parts = trimmed.split(/\s+/);
+        for (let i = 0; i < parts.length - 1; i += 2) {
+          const num = parseInt(parts[i]);
+          const ans = parts[i + 1];
+          if (!isNaN(num) && /^[A-D]$/i.test(ans)) qMap[num] = ans.toUpperCase();
+        }
+      }
+      keys[paperId] = qMap;
+    });
+    return keys;
+  },
+
+  async loadData() {
+    const ids = ['cet4_2024_12_1','cet4_2024_12_2','cet4_2024_06_1','cet4_2024_06_2','cet4_2025_06_1','cet4_2025_06_2','cet4_2025_12_1','cet4_2025_12_2','cet4_2021_06_1','cet4_2021_06_2','cet4_2019_06_1','cet4_2019_06_2','cet4_2019_12_1','cet4_2019_12_2'];
+    const results = [];
+    for (const id of ids) { try { const r = await fetch(`data/text/${id}_cleaned.json`); if (r.ok) results.push(await r.json()); } catch(e) {} }
+    this._listeningPapers = results; this._ready = true;
+  },
+
+  async loadAligned(paperId) {
+    try {
+      const r = await fetch(`data/alignment/${paperId}_aligned.json`);
+      if (r.ok) { this._alignedData = await r.json(); this._loadedAligned = true; return true; }
+    } catch(e) {}
+    this._alignedData = null; this._loadedAligned = false; return false;
+  },
+
+  getWrongAnswers() { try { return JSON.parse(localStorage.getItem('cet4_wrong_answers')) || []; } catch { return []; } },
+  saveWrongAnswer(wrongs) { localStorage.setItem('cet4_wrong_answers', JSON.stringify(wrongs)); },
+  addWrongAnswer(qNum, selected, correctAns, questionText, context) {
+    const wrongs = this.getWrongAnswers();
+    wrongs.unshift({ id: Date.now().toString(36), questionNumber: qNum, selected, correctAnswer: correctAns, questionText, context, timestamp: Date.now() });
+    this.saveWrongAnswer(wrongs.slice(0, 200));
+  },
+
+  makeWordsClickable(text) {
+    return text.replace(/[A-Za-z\u2018\u2019'-]+/g, function(w) {
+      if (w.length < 2) return w;
+      const clean = w.replace(/[^a-zA-Z'-]/g, '');
+      return `<span class="clickable-word" onclick="ListeningLib.onWordClick('${clean.replace(/'/g, "\\'")}','${escapeHtml(text.slice(0,80)).replace(/'/g, "\\'")}')" style="cursor:pointer;border-bottom:1px dashed rgba(37,99,235,0.3);transition:all 0.15s;">${w}</span>`;
+    });
+  },
+  onWordClick(word, context) { if (typeof lookupWord === 'function') lookupWord(word.replace(/[^a-zA-Z'-]/g, ''), context); },
+
+  // ---- 基于 WhisperX 时间戳的逐字逐句高亮 ----
+  updateHighlight() {
+    if (!this._transcriptShowing || !this._loadedAligned || !this._audio) return;
+    const ct = this._audio.currentTime;
+    const sentences = this._alignedData.sentences || [];
+    if (!sentences.length) return;
+
+    // Find current sentence by timestamp
+    let sentIdx = -1;
+    for (let i = 0; i < sentences.length; i++) {
+      if (ct >= sentences[i].start && ct < sentences[i].end) { sentIdx = i; break; }
+    }
+    if (sentIdx < 0) return;
+
+    // Word-level highlight — ALWAYS runs
+    const words = sentences[sentIdx].words || [];
+    document.querySelectorAll('.ls-word').forEach(el => {
+      const ws = parseFloat(el.dataset.ws), we = parseFloat(el.dataset.we);
+      el.classList.toggle('ls-word-done', ct > we);         // 已念过 → 浅蓝底色累积
+      el.classList.toggle('ls-word-now', ct >= ws && ct < we); // 正在念 → 加粗蓝色
+    });
+
+    // Sentence-level highlight — only on change
+    if (sentIdx === this._lastSentIdx) return;
+    this._lastSentIdx = sentIdx;
+
+    document.querySelectorAll('.ls-transcript-line').forEach((el, i) => {
+      el.classList.toggle('active', i === sentIdx);
+      el.classList.toggle('past', i < sentIdx);
+      // Mark all words in past sentences as "done"
+      if (i < sentIdx) {
+        el.querySelectorAll('.ls-word').forEach(w => w.classList.add('ls-word-done'));
+      }
+    });
+    const activeEl = document.querySelector('.ls-transcript-line.active');
+    if (activeEl) activeEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  },
+
+  setupEvents() {
+    document.getElementById('lh-hero-start').addEventListener('click', () => { const c = document.querySelectorAll('.lh-paper-card'); if (c.length) c[0].click(); });
+    document.getElementById('ps-back').addEventListener('click', () => { this.stopAudio(); document.getElementById('practice-session').classList.remove('active'); });
+    document.getElementById('ps-play').addEventListener('click', () => this.togglePlay());
+    document.getElementById('ps-prev').addEventListener('click', () => this.skipPrev());
+    document.getElementById('ps-next').addEventListener('click', () => this.skipNext());
+    document.getElementById('ps-transcript-btn').addEventListener('click', () => this.toggleTranscript());
+    document.querySelectorAll('.lp-speed-btn').forEach(btn => {
+      btn.addEventListener('click', () => { const s = parseFloat(btn.dataset.speed); this.setSpeed(s); document.querySelectorAll('.lp-speed-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); });
+    });
+  },
+
+  togglePlay() {
+    if (!this._audio) { showToast('暂无音频文件'); return; }
+    if (this._playing) {
+      this._audio.pause(); this._playing = false;
+      document.getElementById('ps-play').innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px;"><polygon points="8 5 19 12 8 19 8 5"/></svg>';
+    } else {
+      this._audio.play().catch(() => showToast('无法播放音频')); this._playing = true;
+      document.getElementById('ps-play').innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+    }
+  },
+  stopAudio() { if (this._audio) { this._audio.pause(); this._audio = null; } this._playing = false; },
+  skipPrev() { if (this._audio) this._audio.currentTime = Math.max(0, this._audio.currentTime - 10); },
+  skipNext() { if (this._audio) this._audio.currentTime += 10; },
+  setSpeed(s) { this._speed = s; if (this._audio) this._audio.playbackRate = s; },
+
+  toggleTranscript() {
+    this._transcriptShowing = !this._transcriptShowing;
+    const btn = document.getElementById('ps-transcript-btn');
+    btn.textContent = this._transcriptShowing ? '📄 题目' : '📄 原文';
+    btn.style.background = this._transcriptShowing ? 'rgba(37,99,235,0.2)' : 'rgba(255,255,255,0.08)';
+    btn.style.color = this._transcriptShowing ? '#fff' : 'rgba(255,255,255,0.7)';
+
+    if (this._transcriptShowing && this._loadedAligned) {
+      const sentences = this._alignedData.sentences || [];
+      const area = document.getElementById('ps-question-area');
+      area.innerHTML = '<div class="practice-animate" style="font-size:14px;line-height:2;color:var(--color-text);">'
+        + sentences.map((s, i) => {
+          const wordsHtml = (s.words || []).map(w =>
+            `<span class="ls-word" data-ws="${w.start}" data-we="${w.end}" style="transition:all 0.1s;border-radius:2px;padding:0 1px;">${this.makeWordsClickable(escapeHtml(w.w))} </span>`
+          ).join('');
+          return `<div class="ls-transcript-line${i===0?' active':''}" data-si="${i}" style="margin-bottom:2px;padding:5px 10px;border-radius:8px;border-left:3px solid transparent;transition:all 0.25s;cursor:pointer;" onclick="ListeningLib.seekToSentence(${i})">${wordsHtml}</div>`;
+        }).join('')
+        + '</div>';
+    } else if (this._transcriptShowing && this._fullText) {
+      // Fallback: show plain text without timestamps
+      const lines = this._fullText.split('\n').filter(l => l.trim());
+      const area = document.getElementById('ps-question-area');
+      area.innerHTML = '<div class="practice-animate" style="font-size:14px;line-height:2;color:var(--color-text);">'
+        + lines.map(l => { const t = escapeHtml(l.trim()); return t ? '<div style="margin-bottom:6px;padding:4px 0;">'+this.makeWordsClickable(t)+'</div>' : ''; }).join('')
+        + '<div style="margin-top:12px;padding:10px;font-size:12px;color:var(--color-text-tertiary);background:#F3F4F6;border-radius:10px;text-align:center;">💡 时间戳对齐数据未加载，高亮功能暂不可用</div></div>';
+    } else {
+      this.renderQuestionsOnly();
+    }
+  },
+
+  seekToSentence(idx) {
+    const sentences = (this._alignedData && this._alignedData.sentences) || [];
+    if (!sentences[idx] || !this._audio) return;
+    this._audio.currentTime = sentences[idx].start;
+    if (!this._playing) this.togglePlay();
+  },
+
+  render() {
+    const r = this._listeningPapers[Math.floor(Math.random() * this._listeningPapers.length)];
+    if (r) document.getElementById('lh-hero-title').textContent = r.title || '随机真题听力';
+    const totalQ = this._listeningPapers.reduce((s, p) => s + (p.sections||[]).reduce((s2, sec) => s2 + (sec.items||[]).reduce((s3, it) => s3 + (it.questions||[]).length,0),0),0);
+    document.getElementById('lh-hero-words').textContent = `词汇量 ${4000 + Math.floor(totalQ/3)}`;
+    document.getElementById('lh-total-count').textContent = `共 ${totalQ} 题`;
+    const catGrid = document.getElementById('lh-cat-grid');
+    catGrid.innerHTML = this.CATS.map(c => {
+      let count = 0;
+      this._listeningPapers.forEach(p => { const sec = (p.sections||[])[this.CATS.indexOf(c)]; if (sec) count += (sec.items||[]).length; });
+      return `<div class="lh-cat-card" data-key="${c.key}"><div class="lh-cat-icon" style="background:${c.color}15;color:${c.color};">${c.icon}</div><div class="lh-cat-name">${c.label}</div><div class="lh-cat-count">${count} 篇 · ${c.desc}</div></div>`;
+    }).join('');
+    catGrid.querySelectorAll('.lh-cat-card').forEach(el => el.addEventListener('click', () => this.filterByCat(el.dataset.key)));
+    this._currentSubKey = null;
+    this.renderPaperList();
+  },
+
+  filterByCat(key) { this._currentSubKey = key; this.renderPaperList(); document.querySelectorAll('.lh-cat-card').forEach(c => c.style.borderColor = 'rgba(255,255,255,0.3)'); const idx = this.CATS.findIndex(c => c.key === key); if (idx >= 0) document.querySelectorAll('.lh-cat-card')[idx].style.borderColor = this.CATS[idx].color; },
+
+  renderPaperList() {
+    const container = document.getElementById('lh-paper-list');
+    const items = [];
+    this._listeningPapers.forEach(p => {
+      (p.sections||[]).forEach((sec, si) => {
+        if (this._currentSubKey) { const i = this.CATS.findIndex(c => c.key === this._currentSubKey); if (si !== i) return; }
+        (sec.items||[]).forEach(item => items.push({ paper:p, section:si, item }));
+      });
+    });
+    container.innerHTML = items.map(it => {
+      const qn = (it.item.questions||[]).length;
+      return `<div class="lh-paper-card" data-paper="${it.paper.paper_id}" data-si="${it.section}" data-ii="${it.paper.sections[it.section].items.indexOf(it.item)}">
+        <div class="lh-paper-cover">${['📡','💬','🎙️'][it.section]||'🎧'}</div>
+        <div class="lh-paper-info"><div class="lh-paper-title">${it.item.type||it.item.question_group_title||'听力练习'}</div>
+        <div class="lh-paper-meta"><span class="lh-paper-tag">${it.paper.title||''}</span><span class="lh-paper-tag">${qn} 题</span></div></div>
+        <div class="lh-paper-progress"><div class="lh-paper-pct">${qn} 题</div></div></div>`;
+    }).join('');
+    container.querySelectorAll('.lh-paper-card').forEach(el => {
+      el.addEventListener('click', () => {
+        const paperId = el.dataset.paper;
+        const secIdx = parseInt(el.dataset.si);
+        const paper = this._listeningPapers.find(p => p.paper_id === paperId);
+        if (!paper) return;
+        const sec = paper.sections[secIdx];
+        if (!sec || !sec.items || !sec.items[0]) return;
+        const item = sec.items[0];
+
+        this.stopAudio();
+        this._paperId = paperId;
+        this._secIdx = secIdx;
+        this._transcriptShowing = false;
+        this._alignedData = null;
+        this._loadedAligned = false;
+        this._lastSentIdx = -1;
+
+        // Load aligned data asynchronously
+        this.loadAligned(paperId);
+
+        const rawText = this.getFullText(paperId);
+        this._fullText = this.getSectionText(rawText, secIdx);
+
+        const overlay = document.getElementById('practice-session');
+        overlay.classList.add('active');
+
+        const labels = ['短篇新闻', '长对话', '讲座演讲'];
+        document.getElementById('ps-title').textContent = (labels[secIdx]||'听力') + ' · ' + (item.type||'练习');
+        document.getElementById('ps-source').textContent = paper.title || 'CET-4';
+
+        document.getElementById('ps-play').innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px;"><polygon points="8 5 19 12 8 19 8 5"/></svg>';
+        document.getElementById('ps-progress-fill').style.width = '0%';
+        document.getElementById('ps-time-current').textContent = '0:00';
+        document.getElementById('ps-time-total').textContent = '--:--';
+        const tb = document.getElementById('ps-transcript-btn');
+        tb.textContent = '📄 原文'; tb.style.background = 'rgba(255,255,255,0.08)'; tb.style.color = 'rgba(255,255,255,0.7)';
+
+        const mp3 = this.getMp3Path(paperId);
+        if (mp3) {
+          const audio = new Audio(mp3);
+          audio.preload = 'metadata'; audio.playbackRate = this._speed;
+          audio.addEventListener('loadedmetadata', () => {
+            const d = audio.duration;
+            document.getElementById('ps-time-total').textContent = Math.floor(d/60)+':'+String(Math.floor(d%60)).padStart(2,'0');
+          });
+          audio.addEventListener('timeupdate', () => {
+            if (!audio.duration) return;
+            document.getElementById('ps-progress-fill').style.width = (audio.currentTime/audio.duration*100)+'%';
+            document.getElementById('ps-time-current').textContent = Math.floor(audio.currentTime/60)+':'+String(Math.floor(audio.currentTime%60)).padStart(2,'0');
+            this.updateHighlight();
+          });
+          audio.addEventListener('ended', () => { this._playing = false; document.getElementById('ps-play').innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px;"><polygon points="8 5 19 12 8 19 8 5"/></svg>'; });
+          audio.addEventListener('error', () => showToast('音频加载失败'));
+          this._audio = audio;
+        } else { document.getElementById('ps-time-total').textContent = '🔇 无音频'; }
+
+        this.renderQuestionsOnly();
+
+        document.querySelectorAll('.lp-sidebar-tab').forEach(tab => {
+          tab.addEventListener('click', () => {
+            document.querySelectorAll('.lp-sidebar-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const content = document.getElementById('ps-sidebar-content');
+            if (tab.dataset.tab === 'notes') content.innerHTML = '<div style="padding:12px;"><textarea placeholder="在此记录笔记..." style="width:100%;min-height:120px;border:1px solid #E5E7EB;border-radius:12px;padding:12px;font-size:13px;line-height:1.6;resize:vertical;outline:none;font-family:var(--font-sans);"></textarea></div>';
+            else if (tab.dataset.tab === 'vocab') content.innerHTML = '<div style="padding:12px;font-size:13px;color:var(--color-text-tertiary);">点击原文中的单词即可查词并加入生词本</div>';
+            else if (tab.dataset.tab === 'wrong') {
+              const wrongs = this.getWrongAnswers();
+              if (!wrongs.length) content.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--color-text-tertiary);">暂无错题记录</div>';
+              else content.innerHTML = '<div style="padding:8px 12px;font-size:12px;font-weight:600;color:var(--color-text-secondary);border-bottom:1px solid var(--color-border);">共 '+wrongs.length+' 道错题 <button onclick="document.getElementById(\'ps-sidebar-content\').innerHTML=\'<div style=padding:20px;text-align:center;font-size:13px;color:var(--color-text-tertiary);>已清空</div>\';localStorage.removeItem(\'cet4_wrong_answers\');" style="float:right;border:none;background:none;color:#EF4444;cursor:pointer;font-size:12px;">清空</button></div>'
+                + wrongs.slice(0,30).map(w => '<div style="padding:10px 12px;border-bottom:1px solid var(--color-border);font-size:13px;"><div style="font-weight:600;margin-bottom:2px;">#'+w.questionNumber+' '+escapeHtml((w.questionText||'').slice(0,40))+'</div><div style="color:#EF4444;font-size:12px;">你选: '+w.selected+'</div>'+(w.correctAnswer?'<div style="color:#10B981;font-size:12px;">正确: '+w.correctAnswer+'</div>':'')+'<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:2px;">'+escapeHtml(w.context||'')+'</div></div>').join('');
+            }
+            else content.innerHTML = '<div style="padding:12px;font-size:13px;color:var(--color-text-secondary);line-height:1.7;">✨ <strong style="color:#2563EB;">AI 解析即将上线</strong><br><br>• 句子结构分析<br>• 语法点讲解<br>• 中文翻译<br>• 考点提示</div>';
+          });
+        });
+        document.querySelector('.lp-sidebar-tab[data-tab="notes"]').click();
+      });
+    });
+  },
+
+  renderQuestionsOnly() {
+    const paper = this._listeningPapers.find(p => p.paper_id === this._paperId);
+    if (!paper) return;
+    const sec = paper.sections[this._secIdx];
+    if (!sec || !sec.items || !sec.items[0]) return;
+    const item = sec.items[0];
+    const area = document.getElementById('ps-question-area');
+    area.innerHTML = '';
+    (item.questions||[]).forEach((q, qi) => {
+      const opts = ['A','B','C','D'].map(k => ({k, t: (q.options||{})[k]})).filter(o => o.t);
+      area.innerHTML += `<div class="ls-item ${qi===0?'active':'future'}" style="margin-bottom:16px;">
+        <div class="ls-time">第 ${q.question_number} 题</div>
+        <div class="ls-text">${escapeHtml(q.question_text||'请选择正确答案')}</div>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">
+          ${opts.map(o => `<button class="practice-opt-btn" data-q="${q.question_number}" data-ans="${o.k}" style="padding:10px 14px;font-size:13px;margin:0;flex:1;min-width:120px;"><span class="opt-letter">${o.k}</span>${escapeHtml(o.t)}</button>`).join('')}
+        </div></div>`;
+    });
+    area.querySelectorAll('.practice-opt-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const qNum = parseInt(btn.dataset.q);
+        const selected = btn.dataset.ans;
+        const correctAnswer = (this._answerKeys||{})[this._paperId] ? (this._answerKeys[this._paperId][qNum]||null) : null;
+        btn.parentElement.querySelectorAll('.practice-opt-btn').forEach(b => {
+          b.disabled = true;
+          const k = b.dataset.ans;
+          if (correctAnswer && k === correctAnswer) b.classList.add('correct');
+          else if (k === selected && correctAnswer && selected !== correctAnswer) b.classList.add('wrong');
+          else if (k === selected && !correctAnswer) b.style.borderColor = '#2563EB';
+        });
+        if (correctAnswer && selected !== correctAnswer) this.addWrongAnswer(qNum, selected, correctAnswer, '', this._paperId);
+      });
+    });
+  }
+};
+
+function renderListeningLibrary() {
+  if (!ListeningLib._ready) { ListeningLib.init(); return; }
+  ListeningLib.render();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   state = loadState();
   switchView(state.currentView || 'dashboard');
@@ -3122,6 +3701,8 @@ document.addEventListener('DOMContentLoaded', function() {
     reader.readAsText(file, 'UTF-8');
   });
 });
+
+
 </script>
 </body>
 </html>

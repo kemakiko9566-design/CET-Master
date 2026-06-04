@@ -1,0 +1,207 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+修复2021年CET-4数据（因PDF提取乱码导致的数据损坏）
+使用从网页获取的清洁数据重新生成JSON文件。
+"""
+
+import json
+import os
+import re
+
+OUTPUT_DIR = r'D:\SynologyDrive\SynologyDrive\wzq\Language\CET\CET project\data\text'
+
+def clean_text(text):
+    text = re.sub(r'\s+', ' ', text)
+    return text.strip()
+
+def build_options(lines_text):
+    """从文本中提取选择题选项"""
+    questions = []
+    current_num = None
+    current_options = {}
+    
+    for line in lines_text.split('\n'):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        
+        num_match = re.match(r'(\d+)\.\s*', stripped)
+        if num_match:
+            num = int(num_match.group(1))
+            if current_num is not None and current_options:
+                questions.append({
+                    'question_number': current_num,
+                    'options': dict(current_options)
+                })
+            current_num = num
+            current_options = {}
+            rest = stripped[num_match.end():]
+            opts = re.findall(r'([A-D]\))\s*([^\n]*?)(?=\s*(?:[A-D]\)|$))', rest)
+            for l, t in opts:
+                current_options[l[0]] = t.strip()
+        else:
+            if current_num is not None:
+                opts = re.findall(r'([A-D]\))\s*([^\n]*?)(?=\s*(?:[A-D]\)|$))', stripped)
+                for l, t in opts:
+                    current_options[l[0]] = t.strip()
+    
+    if current_num is not None and current_options:
+        questions.append({
+            'question_number': current_num,
+            'options': dict(current_options)
+        })
+    
+    questions.sort(key=lambda x: x['question_number'])
+    return questions
+
+
+# ============ cet4_2021_06_1 (第一套) ============
+# 数据来源: tsvtc.edu.cn PDF + xinwendao.cn 答案
+
+cet4_2021_06_1_reading = {
+    "paper_id": "cet4_2021_06_1",
+    "title": "2021年06月四级真题（第1套）",
+    "sections": [
+        {
+            "section_name": "Section A",
+            "type": "Banked Cloze",
+            "passage": "Most animals seek shade when temperatures in the Sahara Desert soar to 120 degrees Fahrenheit. But for the Saharan silver ant, crawling from their underground nests into the sun's brutal rays to hunt for food, this is the perfect time to seek lunch. In 2015 these ants were joined in the desert by scientists from two Belgian universities, who spent a month in the extreme heat tracking the ants and digging out their nests. The goal was simple, to discover how the species adapted to the kind of heat that can literally melt the bottom of shoes. Back in Belgium, the scientists looked at the ants under an electronic microscope and found that their thick, triangular hair reflects light like a prism, giving them a metallic reflection and protecting them from the sun's awful heat. When Ph.D. student Quentin Willot removed the hair from an ant with a tiny knife and put it under a heat lamp, its temperature jumped. The ants' method of staying cool is unique among animals. Could this reflective type of hair protect people? Willot says companies are interested in adapting these ants' method of heat protection for human use, including everything from helping to protect the lives of firefighters to keeping homes cool in summer.",
+            "word_bank": [
+                {"letter": "A", "word": "adapting"}, {"letter": "B", "word": "consciously"},
+                {"letter": "C", "word": "crawling"}, {"letter": "D", "word": "crowded"},
+                {"letter": "E", "word": "extreme"}, {"letter": "F", "word": "hunt"},
+                {"letter": "G", "word": "literally"}, {"letter": "H", "word": "moderate"},
+                {"letter": "I", "word": "remote"}, {"letter": "J", "word": "removed"},
+                {"letter": "K", "word": "species"}, {"letter": "L", "word": "specimens"},
+                {"letter": "M", "word": "thick"}, {"letter": "N", "word": "tiny"},
+                {"letter": "O", "word": "unique"}
+            ],
+            "questions": [{"question_number": i, "blank_context": ""} for i in range(26, 36)]
+        },
+        {
+            "section_name": "Section B",
+            "type": "Long Reading Matching",
+            "paragraphs": [
+                {"letter": "A", "text": "This month, more than 4 million students across the nation will begin high school. Many will do well. But many will not. Consider that nearly two-thirds of students will experience the \"ninth-grade shock,\" which refers to a dramatic drop in a student's academic performance. Some students cope with this shock by avoiding challenges. For instance, they may drop difficult coursework. Others may experience a hopelessness that results in failing their core classes, such as English, science and math."},
+                {"letter": "B", "text": "This should matter a great deal to parents, teachers and policymakers. Ultimately it should matter to the students themselves and society at large, because students' experience of transitioning to the ninth grade can have long-term consequences not only for the students themselves but for their home communities. We make these observations as research psychologists who have studied how schools and families can help young people thrive."},
+                {"letter": "C", "text": "In the new global economy, students who fail to finish the ninth grade with passing grades in college preparatory coursework are very unlikely to graduate on time and go on to get jobs. One study has calculated that the lifetime benefit to the local economy for a single additional student who completes high school is half a million dollars or more. This is based on higher earnings and avoided costs in health care, crime, welfare dependence and other things."},
+                {"letter": "D", "text": "The consequences of doing poorly in the ninth grade can impact more than students' ability to find a good job. It can also impact the extent to which they enjoy life. Students lose many of the friends they turned to for support when they move from the eighth to the ninth grade. One study of ninth-grade students found that 50 percent of friendships among ninth graders changed from one month to the next, signaling striking instability in friendships."},
+                {"letter": "E", "text": "In addition, studies find the first year of high school typically shows one of the greatest increases in depression of any year over the lifespan. Researchers think that one explanation is that ties to friends are broken while academic demands are rising. Furthermore, most adult cases of clinical depression first emerge in adolescence. The World Health Organization reports that depression has the greatest burden of disease worldwide, in terms of the total cost of treatment and the loss of productivity."},
+                {"letter": "F", "text": "Given all that's riding on having a successful ninth grade experience, it pays to explore what can be done to meet the academic, social and emotional challenges of the transition to high school. So far, our studies have yielded one main insight: Students' beliefs about change-their beliefs about whether people are stuck one way forever, or whether people can change their personalities and abilities-are related to their ability to cope, succeed academically and maintain good mental health. Past research has called these beliefs \"mindsets,\" with a \"fixed mindset\" referring to the belief that people cannot change and a \"growth mindset\" referring to the belief that people can change."},
+                {"letter": "G", "text": "In one recent study, we examined 360 adolescents' beliefs about the nature of \"smartness\"-that is, their fixed mindsets about intelligence. We then assessed biological stress responses for students whose grades were dropping by examining their stress hormones. Students who believed that intelligence is fixed-that you are stuck being \"not smart\" if you struggle in school-showed higher levels of stress hormones when their grades were declining at the beginning of the ninth grade. If students believed that intelligence could improve-that is to say, when they held more of a growth mindset of intelligence-they showed lower levels of stress hormones when their grades were declining. This was an exciting result because it showed that the body's stress responses are not determined solely by one's grades."},
+                {"letter": "H", "text": "We also investigated the social side of the high school transition. In this study, instead of teaching students that their smartness can change, we taught them that their social standing-that is, whether they are bullied or excluded or left out-can change over time. We then looked at high school students' stress responses to daily social difficulties. That is, we taught them a growth mindset about their social lives. In this study, students came into the laboratory and were asked to give a public speech in front of upper-year students. The topic of the speech was what makes one popular in high school. Following this, students had to complete a difficult mental math task in front of the same upper-year students."},
+                {"letter": "I", "text": "Experiment results showed that students who were not taught that people can change showed poor stress responses. When these students gave the speech, their blood vessels contracted and their hearts pumped less blood through the body-both responses that the body shows when it is preparing for damage or defeat after a physical threat. Then they gave worse speeches and made more mistakes in math. But when students were taught that people can change, they had better responses to stress, in part because they felt like they had the resources to deal with the demanding situation. Students who got the growth mindset intervention showed less-contracted blood vessels and their hearts pumped more blood-both of which contributed to more oxygen getting to the brain, and, ultimately, better performance on the speech and mental math tasks."},
+                {"letter": "J", "text": "These findings lead to several possibilities that we are investigating further. First, we are working to replicate these findings in more diverse school communities. We want to know in which types of schools and for which kinds of students these growth mindset ideas help young people adapt to the challenges of high school. We also hope to learn how teachers, parents or school counselors can help students keep their ongoing academic or social difficulties in perspective. We wonder what would happen if schools helped to make beliefs about the potential for change and improvement a larger feature of the overall school culture, especially for students starting the ninth grade."}
+            ],
+            "statements": [
+                {"number": 36, "text": "The number of people experiencing depression shows a sharp increase in the first year of high school."},
+                {"number": 37, "text": "According to one study, students' academic performance is not the only decisive factor of their stress responses."},
+                {"number": 38, "text": "Researchers would like to explore further how parents and schools can help ninth graders by changing their mindset."},
+                {"number": 39, "text": "According to one study, each high school graduate contributes at least 500,000 dollars to the local economy."},
+                {"number": 40, "text": "In one study, students were told their social position in school is not unchangeable."},
+                {"number": 41, "text": "It is reported that depression results in enormous economic losses worldwide."},
+                {"number": 42, "text": "One study showed that friendships among ninth graders were far from stable."},
+                {"number": 43, "text": "More than half of students will find their academic performance declining sharply when they enter the ninth grade."},
+                {"number": 44, "text": "Researchers found through experiments that students could be taught to respond to stress in a more positive way."},
+                {"number": 45, "text": "It is beneficial to explore ways to cope with the challenges facing students entering high school."}
+            ],
+            "questions": []
+        },
+        {
+            "section_name": "Section C",
+            "type": "Careful Reading",
+            "passages": [
+                {
+                    "passage_number": 1,
+                    "passage_text": "Boredom has become trendy. Studies point to how boredom is good for creativity and innovation, as well as mental health. It is found that people are more creative following the completion of a tedious task. When people are bored, they have an increase in \"associative thought\"-the process of making new connections between ideas, which is linked to innovative thinking. These studies are impressive, but in reality, the benefits of boredom may be related to having time to clear your mind, be quiet, or daydream. In our stimulation-rich world, it seems unrealistic that boredom could occur at all. Yet, there are valid reasons boredom may feel so painful. As it turns out, boredom might signal the fact that you have a need that isn't being met. Our always-on world of social media may result in more connections, but they are superficial and can lack belonging. Feeling bored may signal the desire for a greater sense of community and the feeling that you fit in with others around you. So take the step of joining an organization to build face-to-face relationships. You'll find depth that you won't get from your screen no matter how many likes you get on your post. Similar to the need for belonging, bored people often report that they feel a limited sense of meaning. It's a fundamental human need to have a larger purpose and to feel like we're part of something bigger than ourselves. When people are bored, they're more likely to feel less meaning in their lives. If you want to reduce boredom and increase your sense of meaning, seek work where you can make a unique contribution, or find a cause you can support with your time and talent. If your definition of boredom is being quiet, mindful, and reflective, keep it up. But if you're struggling with real boredom and the emptiness it provokes, consider whether you might seek new connections and more significant challenges. These are the things that will genuinely relieve boredom and make you more effective in the process.",
+                    "questions": [
+                        {"question_number": 46, "options": {"A": "It facilitates innovative thinking.", "B": "It is a result of doing boring tasks.", "C": "It helps people connect with others.", "D": "It does harm to one's mental health."}},
+                        {"question_number": 47, "options": {"A": "A need to be left alone.", "B": "A desire to be fulfilled.", "C": "A conflict to be resolved.", "D": "A feeling to be validated."}},
+                        {"question_number": 48, "options": {"A": "It may be an obstacle to expanding one's connections.", "B": "It may get in the way of enhancing one's social status.", "C": "It may prevent people from developing a genuine sense of community.", "D": "It may make people feel that they ought to fit in with the outside world."}},
+                        {"question_number": 49, "options": {"A": "Count the likes they get on their posts.", "B": "Reflect on how they relate to others.", "C": "Engage in real-life interactions.", "D": "Participate in online discussions."}},
+                        {"question_number": 50, "options": {"A": "Try to do something original.", "B": "Confront significant challenges.", "C": "Define boredom in their unique way.", "D": "Devote themselves to a worthy cause."}}
+                    ]
+                },
+                {
+                    "passage_number": 2,
+                    "passage_text": "Can you remember what you ate yesterday? If asked, most people will be able to give a vague description of their main meals: breakfast, lunch, dinner. But can you be sure you've noted every snack bar in your car, or every handful of nuts at your desk? Most people will have a feeling that they've missed something out. We originally had this suspicion back in 2016, puzzled by the fact that national statistics showed calorie consumption falling dramatically over past decades. We found reliable evidence that people were drastically under-reporting what they ate. Now the Office for National Statistics has confirmed that we are consuming 50% more calories than our national statistics claim. Why is this happening? We can point to at least three potential causes. One is the rise in obesity levels itself. Under-reporting rates are much higher for obese people, because they simply consume more food, and thus have more to remember. Another cause is that the proportion of people who are trying to lose weight has been increasing over time. People who want to lose weight are more likely to under-report their eating-regardless of whether they are overweight or not. This may be driven partly by self-deception or \"wishful thinking.\" The final potential cause is an increase in snacking and eating out over recent decades-both in terms of how often they happen and how much they contribute to our overall energy intake. Again, there is evidence that food consumed out of the home is one of the most poorly recorded categories in surveys. So, what's the message conveyed? For statistics, we should invest in more accurate measurement options. For policy, we need to focus on options that make it easy for people to eat fewer calories. If people do not know how much they are eating, it can be really hard for them to stick to a diet. Also, we should be looking for new ways to ensure what people eat wouldn't have much impact on their waistlines. If this works, it won't matter if they can't remember what they ate yesterday.",
+                    "questions": [
+                        {"question_number": 51, "options": {"A": "Calorie consumption had fallen drastically over the decades.", "B": "Most people surveyed were reluctant to reveal what they ate.", "C": "The national statistics did not reflect the actual calorie consumption.", "D": "Most people did not include snacks when reporting their calorie intake."}},
+                        {"question_number": 52, "options": {"A": "Fewer people were on a diet now than decades ago.", "B": "People tended to consume more than they reported.", "C": "People were reporting their calorie intake more accurately.", "D": "More people were eating out than eating at home."}},
+                        {"question_number": 53, "options": {"A": "Diets that cannot be sustained for long.", "B": "Self-deception and wishful thinking.", "C": "The inability to recall consumed food.", "D": "The attraction of more and more snacks."}},
+                        {"question_number": 54, "options": {"A": "The increase in obesity rates.", "B": "The desire to be on a diet.", "C": "The rise in eating-out frequency.", "D": "The drop in home cooking."}},
+                        {"question_number": 55, "options": {"A": "Improve the accuracy of statistics on food consumption.", "B": "Ensure what people consume will not add to their weight.", "C": "Find new ways to help people remember what they ate.", "D": "Make it easy for people to reduce their food intake."}}
+                    ]
+                }
+            ]
+        }
+    ]
+}
+
+# 写入文件
+reading_path = os.path.join(OUTPUT_DIR, 'cet4_2021_06_1_reading.json')
+with open(reading_path, 'w', encoding='utf-8') as f:
+    json.dump(cet4_2021_06_1_reading, f, ensure_ascii=False, indent=2)
+print(f'[OK] cet4_2021_06_1_reading.json written')
+
+# Writing
+writing_data = {
+    "paper_id": "cet4_2021_06_1",
+    "title": "2021年06月四级真题（第1套）",
+    "writing": {
+        "directions": "For this part, you are allowed 30 minutes to write an essay titled \"Are people becoming addicted to technology?\". The statement given below is for your reference. You should write at least 120 words but no more than 180 words. Numerous studies claim that addiction to technology is real and it has the same effect on the brain as drug addiction.",
+        "topic": "Are people becoming addicted to technology?"
+    }
+}
+writing_path = os.path.join(OUTPUT_DIR, 'cet4_2021_06_1_writing.json')
+with open(writing_path, 'w', encoding='utf-8') as f:
+    json.dump(writing_data, f, ensure_ascii=False, indent=2)
+print(f'[OK] cet4_2021_06_1_writing.json written')
+
+# Translation
+translation_data = {
+    "paper_id": "cet4_2021_06_1",
+    "title": "2021年06月四级真题（第1套）",
+    "translation": {
+        "directions": "For this part, you are allowed 30 minutes to translate a passage from Chinese into English. You should write your answer on Answer Sheet 2.",
+        "chinese_text": "铁观音(Tieguanyin)是中国最受欢迎的茶之一，原产自福建省安溪县西坪镇，如今安溪全县普遍种植，但该县不同地区生产的铁观音又各具风味。铁观音一年四季均可采摘，尤以春秋两季采摘的茶叶品质最佳。铁观音加工非常复杂，需要专门的技术和丰富的经验。铁观音含有多种维生素，喝起来口感独特。常饮铁观音有助于预防心脏病、降低血压、增强记忆力。"
+    }
+}
+translation_path = os.path.join(OUTPUT_DIR, 'cet4_2021_06_1_translation.json')
+with open(translation_path, 'w', encoding='utf-8') as f:
+    json.dump(translation_data, f, ensure_ascii=False, indent=2)
+print(f'[OK] cet4_2021_06_1_translation.json written')
+
+
+# ============ cet4_2021_06_2 (第二套) ============
+# 第二套: Writing - Is technology making people lazy?
+# Translation - 龙井茶
+
+cet4_2021_06_2_writing = {
+    "paper_id": "cet4_2021_06_2",
+    "title": "2021年06月四级真题（第2套）",
+    "writing": {
+        "directions": "For this part, you are allowed 30 minutes to write an essay titled \"Is technology making people lazy?\". The statement given below is for your reference. You should write at least 120 words but no more than 180 words. Many studies claim that computers distract people, make them lazy thinkers and even lower their work efficiency.",
+        "topic": "Is technology making people lazy?"
+    }
+}
+writing_path2 = os.path.join(OUTPUT_DIR, 'cet4_2021_06_2_writing.json')
+with open(writing_path2, 'w', encoding='utf-8') as f:
+    json.dump(cet4_2021_06_2_writing, f, ensure_ascii=False, indent=2)
+print(f'[OK] cet4_2021_06_2_writing.json written')
+
+cet4_2021_06_2_translation = {
+    "paper_id": "cet4_2021_06_2",
+    "title": "2021年06月四级真题（第2套）",
+    "translation": {
+        "directions": "For this part, you are allowed 30 minutes to translate a passage from Chinese into English. You should write your answer on Answer Sheet 2.",
+        "chinese_text": "龙井(Longjing)是一种绿茶，主要产自中国东部沿海的浙江省。龙井茶独特的香味和口感为其赢得了\"中国名茶\"的称号，在中国深受大众的欢迎，在海外饮用的人也越来越多。龙井茶通常被制作成扁平状，加以炒制。炒制过程动作迅速，技术娴熟。龙井茶风味独特，健康价值很高，因为它富含维生素和其他多种有益健康的元素。经常饮用龙井茶有助于减轻心脏疾病、降低血压、增强免疫力。"
+    }
+}
+translation_path2 = os.path.join(OUTPUT_DIR, 'cet4_2021_06_2_translation.json')
+with open(translation_path2, 'w', encoding='utf-8') as f:
+    json.dump(cet4_2021_06_2_translation, f, ensure_ascii=False, indent=2)
+print(f'[OK] cet4_2021_06_2_translation.json written')
+
+print('\n=== 2021 data fix complete! ===')

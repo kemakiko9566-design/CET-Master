@@ -78,15 +78,15 @@ CET Master 就是为**解决这些问题**而生的。
 
 用浏览器打开 `index.html` 即可，所有功能完整可用。
 
-### 方式二：本地服务器
+### 方式二：本地服务器（推荐）
 
 ```bash
-python -m http.server 8080
+python server.py
 ```
 
-浏览器访问 `http://localhost:8080/CET4-Master-OS.html`
+浏览器访问 `http://localhost:8080/`
 
-> 建议使用本地服务器方式，音频播放更流畅。
+> 建议使用本地服务器方式，音频播放更流畅。本项目的 `server.py` 支持 HTTP 206 Partial Content（音频拖动进度条）和静默处理连接断开异常，比 `python -m http.server` 更加稳定。
 
 ### 启用 AI 提分报告
 
