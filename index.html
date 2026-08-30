@@ -299,7 +299,7 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; appearance:
     <button class="nav-item" data-view="exam" onclick="switchView('exam')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>真题考试
     </button>
-    <button class="nav-item" data-view="practice" onclick="switchView('practice')">
+    <button class="nav-item" onclick="window.open('http://localhost:3000','_blank')" style="color:rgba(255,255,255,0.6);">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>精听
     </button>
     <button class="nav-item" data-view="transcript" onclick="switchView('transcript')">
@@ -577,7 +577,7 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; appearance:
   <button class="tab-btn" onclick="switchView('exam')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>真题</span>
   </button>
-  <button class="tab-btn" onclick="switchView('practice')">
+  <button class="tab-btn" onclick="window.open('http://localhost:3000','_blank')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><span>精听</span>
   </button>
   <button class="tab-btn" onclick="switchView('vocab')">

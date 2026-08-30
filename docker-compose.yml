@@ -1,0 +1,36 @@
+services:
+  frontend:
+    image: nginx:alpine
+    container_name: cet4-frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+      - ./exam_data.js:/usr/share/nginx/html/exam_data.js:ro
+      - ./data:/usr/share/nginx/html/data:ro
+      - ./dist:/usr/share/nginx/html/dist:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - cet4-network
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cet4-api
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    environment:
+      - PORT=8000
+    volumes:
+      - ./data:/app/data
+      - ./dist:/app/dist
+    networks:
+      - cet4-network
+    restart: unless-stopped
+
+networks:
+  cet4-network:
+    driver: bridge

@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transcription Studio</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        ocean: { DEFAULT: '#0A2540', light: '#1A3A5C', dark: '#061524' },
+        oasis: { DEFAULT: '#00D4B2', light: '#E6FFF8', dark: '#00A88C' },
+        surface: '#F5F7FA',
+        text: { primary: '#1D1D1F', secondary: '#86868B' }
+      },
+      fontFamily: { sans: ['-apple-system','BlinkMacSystemFont','SF Pro Display','Helvetica Neue','PingFang SC','sans-serif'] },
+      borderRadius: { '2xl': '16px', '3xl': '24px' }
+    }
+  }
+}
+</script>
+<style>
+* { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', 'PingFang SC', sans-serif; }
+.glass { background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.3); }
+.card-shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04); }
+.gradient-border { background: linear-gradient(135deg, #0A2540, #00D4B2); }
+.btn-primary { background: #0A2540; color: white; border-radius: 999px; padding: 12px 32px; font-weight: 600; font-size: 15px; border: none; cursor: pointer; transition: all 0.2s; min-height: 48px; }
+.btn-primary:hover { background: #1A3A5C; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(10,37,64,0.2); }
+.btn-primary:active { transform: scale(0.97); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-secondary { background: transparent; color: #0A2540; border-radius: 999px; padding: 10px 24px; font-weight: 500; font-size: 14px; border: 1px solid #E5E5EA; cursor: pointer; transition: all 0.2s; }
+.btn-secondary:hover { background: #F5F5F7; border-color: #C7C7CC; }
+.btn-accent { background: linear-gradient(135deg, #00D4B2, #00A88C); color: white; border-radius: 999px; padding: 10px 24px; font-weight: 500; font-size: 14px; border: none; cursor: pointer; transition: all 0.2s; }
+.btn-accent:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,212,178,0.3); }
+.upload-zone { border: 2px dashed #D2D2D7; border-radius: 24px; transition: all 0.3s; cursor: pointer; }
+.upload-zone:hover, .upload-zone.drag-over { border-color: #00D4B2; background: rgba(0,212,178,0.03); }
+.upload-zone.has-file { border-color: #00D4B2; border-style: solid; background: rgba(0,212,178,0.03); }
+.pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #00D4B2; animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
+.progress-bar { height: 3px; background: #E5E5EA; border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #0A2540, #00D4B2); transition: width 0.5s cubic-bezier(0.25,0.46,0.45,0.94); }
+.sentence { padding: 10px 14px; border-radius: 12px; cursor: pointer; transition: all 0.15s; border-left: 3px solid transparent; display: flex; gap: 12px; align-items: flex-start; }
+.sentence:hover { background: #F5F7FA; }
+.sentence.active { background: rgba(0,212,178,0.08); border-left-color: #00D4B2; }
+.sentence.active .sentence-text { color: #0A2540; font-weight: 600; }
+.sentence-time { font-size: 12px; color: #86868B; font-variant-numeric: tabular-nums; min-width: 48px; flex-shrink: 0; padding-top: 1px; }
+.word-highlight { transition: color 0.15s; }
+.word-highlight.active { color: #00D4B2; font-weight: 600; }
+.srt-preview { font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace; font-size: 13px; line-height: 1.6; background: #FAFAFA; border-radius: 16px; padding: 20px; overflow: auto; max-height: 400px; white-space: pre-wrap; color: #1D1D1F; }
+.json-preview { font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace; font-size: 12px; line-height: 1.5; background: #FAFAFA; border-radius: 16px; padding: 20px; overflow: auto; max-height: 400px; white-space: pre; color: #1D1D1F; }
+.waveform-container { height: 90px; position: relative; overflow: hidden; border-radius: 16px; background: white; }
+.waveform-bar { position: absolute; bottom: 0; border-radius: 2px 2px 0 0; background: linear-gradient(to top, #0A2540, #00D4B2); opacity: 0.25; }
+.waveform-bar.active { opacity: 0.7; }
+.exam-card { border-radius: 16px; padding: 16px; background: white; border: 1px solid #E5E5EA; cursor: pointer; transition: all 0.2s; }
+.exam-card:hover { border-color: #00D4B2; box-shadow: 0 4px 16px rgba(0,212,178,0.1); }
+.exam-card.selected { border-color: #0A2540; box-shadow: 0 4px 16px rgba(10,37,64,0.1); }
+.breathe { animation: breathe 2s ease-in-out infinite; }
+@keyframes breathe { 0%,100% { box-shadow: 0 0 0 0 rgba(0,212,178,0.4); } 50% { box-shadow: 0 0 0 12px rgba(0,212,178,0); } }
+.status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; border-radius: 999px; font-size: 13px; font-weight: 500; }
+.section-divider { height: 1px; background: linear-gradient(90deg, transparent, #E5E5EA, transparent); margin: 24px 0; }
+code { font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; }
+#subtitles-container::-webkit-scrollbar { width: 4px; }
+#subtitles-container::-webkit-scrollbar-track { background: transparent; }
+#subtitles-container::-webkit-scrollbar-thumb { background: #E5E5EA; border-radius: 2px; }
+</style>
+</head>
+<body class="bg-surface text-text-primary min-h-screen">
+
+<div id="app" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+
+  <header class="flex items-center justify-between mb-8 sm:mb-12">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-2xl gradient-border flex items-center justify-center text-white font-bold text-lg">S</div>
+      <div>
+        <h1 class="text-xl font-bold tracking-tight text-ocean">Transcription Studio</h1>
+        <p class="text-sm text-text-secondary">AI-Powered Audio Alignment</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="status-indicator" class="status-badge bg-gray-100 text-text-secondary hidden">
+        <span class="pulse-dot"></span>
+        <span id="status-text">Processing</span>
+      </span>
+    </div>
+  </header>
+
+  <div id="phase-select" class="space-y-6">
+    <div class="text-center mb-8">
+      <h2 class="text-2xl sm:text-3xl font-bold text-ocean tracking-tight">Select or Upload Audio</h2>
+      <p class="text-text-secondary mt-2 text-sm">Choose an existing exam or upload your own audio + transcript</p>
+    </div>
+
+    <div id="empty-state" class="text-center py-12">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-3xl bg-gray-100 flex items-center justify-center">
+        <svg class="w-8 h-8 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m-4 0h8m-4-8V3"/></svg>
+      </div>
+      <p class="text-text-secondary text-sm">Loading available exams...</p>
+    </div>
+
+    <div id="exam-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 hidden"></div>
+
+    <div class="section-divider"></div>
+
+    <div class="flex items-center gap-4">
+      <div class="flex-1 h-px bg-gray-200"></div>
+      <span class="text-xs font-medium text-text-secondary px-2">OR UPLOAD CUSTOM</span>
+      <div class="flex-1 h-px bg-gray-200"></div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+      <div id="audio-upload-zone" class="upload-zone p-8 text-center">
+        <svg class="w-10 h-10 mx-auto mb-3 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+        <p class="font-medium text-sm text-ocean">Drop MP3 Audio Here</p>
+        <p class="text-xs text-text-secondary mt-1" id="audio-file-name">or click to browse</p>
+        <input type="file" accept=".mp3" id="audio-input" class="hidden">
+      </div>
+
+      <div id="text-upload-zone" class="upload-zone p-8 text-center">
+        <svg class="w-10 h-10 mx-auto mb-3 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <p class="font-medium text-sm text-ocean">Drop Cleaned JSON Here</p>
+        <p class="text-xs text-text-secondary mt-1" id="text-file-name">or click to browse</p>
+        <input type="file" accept=".json" id="text-input" class="hidden">
+      </div>
+    </div>
+
+    <div id="selected-exam-info" class="hidden bg-white rounded-2xl p-5 card-shadow mt-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-medium text-text-secondary uppercase tracking-wide">Selected</p>
+          <p id="selected-title" class="font-semibold text-ocean mt-1"></p>
+          <p id="selected-meta" class="text-xs text-text-secondary mt-0.5"></p>
+        </div>
+        <button id="btn-start" class="btn-primary breathe" disabled>
+          <span class="flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Start Transcription
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="phase-progress" class="hidden">
+    <div class="bg-white rounded-3xl p-8 card-shadow text-center max-w-lg mx-auto">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-3xl bg-oasis-light flex items-center justify-center">
+        <svg class="w-8 h-8 text-oasis animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+      </div>
+      <h3 id="progress-title" class="text-lg font-semibold text-ocean">Processing Audio...</h3>
+      <p id="progress-message" class="text-sm text-text-secondary mt-2">Initializing...</p>
+      <div class="progress-bar mt-6">
+        <div id="progress-fill" class="progress-fill" style="width:0%"></div>
+      </div>
+      <p id="progress-percent" class="text-xs text-text-secondary mt-2 font-medium tabular-nums">0%</p>
+    </div>
+  </div>
+
+  <div id="phase-workspace" class="hidden">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-xl font-bold text-ocean tracking-tight" id="workspace-title">Alignment Result</h2>
+        <p class="text-sm text-text-secondary" id="workspace-meta">0 segments</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btn-new-task" class="btn-secondary text-sm">New Task</button>
+      </div>
+    </div>
+
+    <div id="waveform-container" class="waveform-container mb-6 hidden"></div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div class="lg:col-span-3">
+        <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+          <div class="flex items-center gap-2 px-5 py-3 border-b border-gray-50">
+            <svg class="w-4 h-4 text-oasis" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+            <span class="text-sm font-medium text-ocean">Interactive Subtitles</span>
+            <span class="text-xs text-text-secondary ml-auto">Click any sentence to seek</span>
+          </div>
+          <div id="subtitles-container" class="p-3 max-h-[600px] overflow-y-auto space-y-0.5"></div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-2 space-y-4">
+        <div class="bg-white rounded-2xl card-shadow p-5">
+          <h3 class="text-sm font-semibold text-ocean mb-1">Export</h3>
+          <p class="text-xs text-text-secondary mb-4">Download in your preferred format</p>
+          <div class="flex flex-wrap gap-2">
+            <button id="btn-export-json" class="btn-accent text-sm">
+              <span class="flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Export JSON
+              </span>
+            </button>
+            <button id="btn-export-srt" class="btn-secondary text-sm">
+              <span class="flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Export SRT
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+          <div class="flex items-center px-5 py-3 border-b border-gray-50">
+            <span class="text-sm font-medium text-ocean">Preview</span>
+            <div class="ml-auto flex bg-gray-100 rounded-lg p-0.5">
+              <button id="preview-json-btn" class="text-xs px-3 py-1 rounded-md font-medium bg-white text-ocean shadow-sm transition">JSON</button>
+              <button id="preview-srt-btn" class="text-xs px-3 py-1 rounded-md font-medium text-text-secondary transition">SRT</button>
+            </div>
+          </div>
+          <div id="preview-json" class="json-preview"></div>
+          <div id="preview-srt" class="srt-preview hidden"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-ocean text-white px-6 py-3 rounded-2xl text-sm font-medium shadow-lg opacity-0 transition-all duration-300 pointer-events-none z-50 backdrop-blur-sm" style="background: rgba(10,37,64,0.9)"></div>
+
+<script>
+const API_BASE = '';
+let currentTaskId = null;
+let currentResult = null;
+let selectedExam = null;
+let audioFile = null;
+let textFile = null;
+let eventSource = null;
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.opacity = '1';
+  el.style.transform = 'translateX(-50%) translateY(0)';
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(-50%) translateY(10px)';
+  }, 2500);
+}
+
+function $(id) { return document.getElementById(id); }
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+function formatSRTTime(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  const ms = Math.floor((seconds % 1) * 1000);
+  return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0') + ',' + String(ms).padStart(3,'0');
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function generateSRT(data) {
+  const sentences = data.sentences || [];
+  return sentences.map((s, i) => {
+    const start = formatSRTTime(s.start);
+    const end = formatSRTTime(s.end);
+    return (i + 1) + '\n' + start + ' --> ' + end + '\n' + s.text + '\n';
+  }).join('\n');
+}
+
+async function loadExams() {
+  try {
+    const res = await fetch(API_BASE + '/api/exams');
+    const data = await res.json();
+    const exams = data.exams || [];
+    const grid = $('exam-grid');
+    const empty = $('empty-state');
+
+    if (exams.length === 0) {
+      empty.classList.remove('hidden');
+      empty.innerHTML = '<p class="text-text-secondary text-sm">No exams found in data/audio</p>';
+      return;
+    }
+
+    empty.classList.add('hidden');
+    grid.classList.remove('hidden');
+    grid.innerHTML = exams.map(exam => {
+      const badge = exam.has_alignment
+        ? '<span class="text-xs text-oasis font-medium">&#x2713; Aligned</span>'
+        : '<span class="text-xs text-text-secondary">Ready</span>';
+      return '<div class="exam-card" data-paper-id="' + exam.paper_id + '" onclick="selectExam(\'' + exam.paper_id + '\',\'' + exam.title.replace(/'/g,"\\'") + '\',' + exam.has_text + ',' + exam.has_alignment + ')">'
+        + '<div class="flex items-center justify-between mb-2">'
+        + '<span class="text-xs font-medium text-text-secondary uppercase tracking-wider">' + exam.paper_id + '</span>'
+        + badge
+        + '</div>'
+        + '<p class="font-semibold text-sm text-ocean leading-snug">' + escapeHtml(exam.title) + '</p>'
+        + '<div class="flex items-center gap-3 mt-2 text-xs text-text-secondary">'
+        + '<span>' + (exam.items || 0) + ' items</span>'
+        + '<span>' + exam.audio_size_mb + ' MB</span>'
+        + (exam.has_text ? '<span class="text-oasis">&#x2713; text</span>' : '')
+        + '</div></div>';
+    }).join('');
+  } catch (e) {
+    $('empty-state').innerHTML = '<p class="text-red-400 text-sm">Failed to load exams. Is the server running?</p>';
+  }
+}
+
+function selectExam(paperId, title, hasText, hasAlignment) {
+  selectedExam = { paperId: paperId, title: title, hasText: hasText, hasAlignment: hasAlignment };
+  audioFile = null;
+  textFile = null;
+  $('audio-file-name').textContent = 'or click to browse';
+  $('text-file-name').textContent = 'or click to browse';
+  $('audio-upload-zone').classList.remove('has-file');
+  $('text-upload-zone').classList.remove('has-file');
+
+  document.querySelectorAll('.exam-card').forEach(function(c) { c.classList.remove('selected'); });
+  var card = document.querySelector('.exam-card[data-paper-id="' + paperId + '"]');
+  if (card) card.classList.add('selected');
+
+  var info = $('selected-exam-info');
+  info.classList.remove('hidden');
+  $('selected-title').textContent = title;
+  $('selected-meta').textContent = paperId + (hasAlignment ? ' — previously aligned' : ' — ready for alignment');
+
+  var btn = $('btn-start');
+  btn.disabled = false;
+  if (hasAlignment) {
+    btn.innerHTML = '<span class="flex items-center gap-2">Re-align</span>';
+    btn.classList.remove('breathe');
+  } else {
+    btn.innerHTML = '<span class="flex items-center gap-2"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Start Transcription</span>';
+    btn.classList.add('breathe');
+  }
+}
+
+function setupUpload(zoneId, inputId, labelId, acceptType, cb) {
+  var zone = $(zoneId);
+  var input = $(inputId);
+  var label = $(labelId);
+
+  zone.addEventListener('click', function() { input.click(); });
+  zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', function() { zone.classList.remove('drag-over'); });
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    var file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith(acceptType === '.mp3' ? '.mp3' : '.json')) {
+      cb(file);
+      label.textContent = file.name;
+      label.className = 'text-xs text-oasis font-medium mt-1';
+      zone.classList.add('has-file');
+    }
+  });
+  input.addEventListener('change', function() {
+    var file = input.files[0];
+    if (file) {
+      cb(file);
+      label.textContent = file.name;
+      label.className = 'text-xs text-oasis font-medium mt-1';
+      zone.classList.add('has-file');
+    }
+  });
+}
+
+setupUpload('audio-upload-zone', 'audio-input', 'audio-file-name', '.mp3', function(f) {
+  audioFile = f;
+  selectedExam = null;
+  document.querySelectorAll('.exam-card').forEach(function(c) { c.classList.remove('selected'); });
+  $('selected-exam-info').classList.remove('hidden');
+  $('selected-title').textContent = f.name;
+  $('selected-meta').textContent = 'Custom upload';
+  $('btn-start').disabled = !textFile;
+});
+
+setupUpload('text-upload-zone', 'text-input', 'text-file-name', '.json', function(f) {
+  textFile = f;
+  selectedExam = null;
+  document.querySelectorAll('.exam-card').forEach(function(c) { c.classList.remove('selected'); });
+  if (!audioFile) {
+    $('selected-exam-info').classList.remove('hidden');
+    $('selected-title').textContent = f.name;
+    $('selected-meta').textContent = 'Custom upload — upload audio too';
+    $('btn-start').disabled = true;
+  } else {
+    $('btn-start').disabled = false;
+  }
+});
+
+$('btn-start').addEventListener('click', startTranscription);
+
+async function startTranscription() {
+  var btn = $('btn-start');
+  btn.disabled = true;
+  btn.textContent = 'Starting...';
+
+  try {
+    var paperId, audioPath, textPath;
+
+    if (selectedExam) {
+      paperId = selectedExam.paperId;
+    } else if (audioFile) {
+      var formData = new FormData();
+      formData.append('file', audioFile);
+      var uploadRes = await fetch(API_BASE + '/api/upload/audio', { method: 'POST', body: formData });
+      var uploadData = await uploadRes.json();
+      audioPath = uploadData.path;
+      paperId = audioFile.name.replace('.mp3', '');
+
+      if (textFile) {
+        var textForm = new FormData();
+        textForm.append('file', textFile);
+        var textRes = await fetch(API_BASE + '/api/upload/text', { method: 'POST', body: textForm });
+        var textData = await textRes.json();
+        textPath = textData.path;
+      }
+    } else {
+      toast('Please select an exam or upload files');
+      btn.disabled = false;
+      btn.innerHTML = '<span class="flex items-center gap-2">Start Transcription</span>';
+      return;
+    }
+
+    $('phase-select').classList.add('hidden');
+    $('phase-progress').classList.remove('hidden');
+    $('progress-fill').style.width = '0%';
+    $('progress-percent').textContent = '0%';
+    $('progress-message').textContent = 'Starting...';
+    $('status-indicator').classList.remove('hidden');
+    $('status-text').textContent = 'Processing';
+
+    var fd = new FormData();
+    fd.append('paper_id', paperId);
+    if (audioPath) fd.append('audio_path', audioPath);
+    if (textPath) fd.append('text_path', textPath);
+
+    var res = await fetch(API_BASE + '/api/alignment/start', { method: 'POST', body: fd });
+    var task = await res.json();
+    currentTaskId = task.task_id;
+
+    connectSSE(task.task_id);
+  } catch (e) {
+    toast('Error: ' + e.message);
+    btn.disabled = false;
+    btn.innerHTML = '<span class="flex items-center gap-2">Retry</span>';
+  }
+}
+
+function connectSSE(taskId) {
+  if (eventSource) { eventSource.close(); }
+
+  eventSource = new EventSource(API_BASE + '/api/alignment/' + taskId + '/progress');
+
+  eventSource.onmessage = function(e) {
+    var data = JSON.parse(e.data);
+    var progress = data.progress || 0;
+    var message = data.message || '';
+    var status = data.status;
+
+    $('progress-fill').style.width = progress + '%';
+    $('progress-percent').textContent = progress + '%';
+    $('progress-message').textContent = message;
+
+    if (status === 'completed') {
+      eventSource.close();
+      $('status-indicator').classList.add('hidden');
+      fetchResult(taskId);
+    } else if (status === 'failed') {
+      eventSource.close();
+      $('status-indicator').classList.add('hidden');
+      $('phase-progress').classList.add('hidden');
+      $('phase-select').classList.remove('hidden');
+      toast('Failed: ' + message);
+    }
+  };
+
+  eventSource.onerror = function() {
+    eventSource.close();
+    $('status-indicator').classList.add('hidden');
+  };
+}
+
+async function fetchResult(taskId) {
+  try {
+    var res = await fetch(API_BASE + '/api/alignment/' + taskId + '/result');
+    if (!res.ok) throw new Error('Failed to fetch result');
+    currentResult = await res.json();
+    showWorkspace(currentResult);
+  } catch (e) {
+    toast('Error loading result: ' + e.message);
+    $('phase-progress').classList.add('hidden');
+    $('phase-select').classList.remove('hidden');
+  }
+}
+
+function showWorkspace(data) {
+  $('phase-progress').classList.add('hidden');
+  $('phase-workspace').classList.remove('hidden');
+
+  var paperId = data.paper_id || 'Unknown';
+  var total = data.total_segments || 0;
+  var sentences = data.sentences || [];
+
+  $('workspace-title').textContent = 'Alignment: ' + paperId;
+  $('workspace-meta').textContent = total + ' segments';
+
+  loadWaveform(paperId);
+
+  var container = $('subtitles-container');
+  container.innerHTML = sentences.map(function(s, idx) {
+    var timeStr = formatTime(s.start);
+    var wordsHtml = (s.words || []).map(function(w) {
+      return '<span class="word-highlight" data-start="' + w.start + '" data-end="' + w.end + '">' + escapeHtml(w.w) + ' </span>';
+    }).join('');
+    return '<div class="sentence" data-index="' + idx + '" data-start="' + s.start + '" data-end="' + s.end + '" onclick="seekTo(' + s.start + ')">'
+      + '<span class="sentence-time">' + timeStr + '</span>'
+      + '<span class="sentence-text text-sm">' + (wordsHtml || escapeHtml(s.text)) + '</span></div>';
+  }).join('');
+
+  renderPreview(data);
+  setupExport(data, paperId);
+}
+
+function loadWaveform(paperId) {
+  var container = $('waveform-container');
+
+  fetch(API_BASE + '/api/audio/' + paperId + '/waveform')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.waveform && data.waveform.length > 0) {
+        container.classList.remove('hidden');
+        var wf = data.waveform;
+        var maxVal = Math.max.apply(null, wf) || 0.01;
+        var barW = Math.max(100 / wf.length, 2);
+        var html = '<div class="flex items-end h-full gap-px px-2 pb-2" style="height:100%">';
+        for (var i = 0; i < wf.length; i++) {
+          var h = Math.max((wf[i] / maxVal) * 80, 2);
+          var cls = i % 5 === 0 ? 'waveform-bar active' : 'waveform-bar';
+          html += '<div class="' + cls + '" style="width:' + barW + 'px;height:' + h + '%"></div>';
+        }
+        html += '</div>';
+        container.innerHTML = html;
+      } else {
+        container.classList.add('hidden');
+      }
+    })
+    .catch(function() { container.classList.add('hidden'); });
+}
+
+function renderPreview(data) {
+  $('preview-json').textContent = JSON.stringify(data, null, 2);
+  $('preview-srt').textContent = generateSRT(data);
+}
+
+function setupExport(data, paperId) {
+  $('btn-export-json').onclick = function() {
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    downloadBlob(blob, paperId + '_aligned.json');
+  };
+  $('btn-export-srt').onclick = function() {
+    var blob = new Blob([generateSRT(data)], { type: 'text/plain' });
+    downloadBlob(blob, paperId + '.srt');
+  };
+}
+
+$('preview-json-btn').addEventListener('click', function() {
+  $('preview-json').classList.remove('hidden');
+  $('preview-srt').classList.add('hidden');
+  $('preview-json-btn').className = 'text-xs px-3 py-1 rounded-md font-medium bg-white text-ocean shadow-sm transition';
+  $('preview-srt-btn').className = 'text-xs px-3 py-1 rounded-md font-medium text-text-secondary transition';
+});
+
+$('preview-srt-btn').addEventListener('click', function() {
+  $('preview-json').classList.add('hidden');
+  $('preview-srt').classList.remove('hidden');
+  $('preview-json-btn').className = 'text-xs px-3 py-1 rounded-md font-medium text-text-secondary transition';
+  $('preview-srt-btn').className = 'text-xs px-3 py-1 rounded-md font-medium bg-white text-ocean shadow-sm transition';
+});
+
+$('btn-new-task').addEventListener('click', function() {
+  $('phase-workspace').classList.add('hidden');
+  $('phase-select').classList.remove('hidden');
+  currentResult = null;
+  currentTaskId = null;
+  if (eventSource) { eventSource.close(); eventSource = null; }
+});
+
+var audioPlayer = null;
+var activeSentenceIndex = -1;
+var highlightInterval = null;
+
+function seekTo(seconds) {
+  if (!audioPlayer) {
+    var paperId = currentResult ? currentResult.paper_id : '';
+    if (!paperId) return;
+    audioPlayer = new Audio(API_BASE + '/api/audio/' + paperId + '/stream');
+    audioPlayer.crossOrigin = 'anonymous';
+    audioPlayer.addEventListener('timeupdate', onTimeUpdate);
+    audioPlayer.addEventListener('loadedmetadata', function() {
+      audioPlayer.currentTime = seconds;
+      audioPlayer.play();
+    });
+    audioPlayer.addEventListener('ended', function() {
+      clearInterval(highlightInterval);
+      document.querySelectorAll('.sentence.active').forEach(function(el) { el.classList.remove('active'); });
+    });
+    audioPlayer.load();
+  } else {
+    audioPlayer.currentTime = seconds;
+    audioPlayer.play();
+  }
+}
+
+function onTimeUpdate() {
+  if (!audioPlayer || !currentResult) return;
+  var currentTime = audioPlayer.currentTime;
+  var sentences = currentResult.sentences || [];
+
+  var newIndex = -1;
+  for (var i = 0; i < sentences.length; i++) {
+    if (currentTime >= sentences[i].start && currentTime <= sentences[i].end) {
+      newIndex = i;
+      break;
+    }
+  }
+
+  if (newIndex !== activeSentenceIndex) {
+    activeSentenceIndex = newIndex;
+    document.querySelectorAll('.sentence').forEach(function(el, idx) {
+      if (idx === newIndex) {
+        el.classList.add('active');
+        el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      } else {
+        el.classList.remove('active');
+      }
+    });
+  }
+
+  if (newIndex >= 0) {
+    var words = sentences[newIndex].words || [];
+    var activeWordEl = null;
+    document.querySelectorAll('.sentence[data-index="' + newIndex + '"] .word-highlight').forEach(function(el) {
+      var ws = parseFloat(el.getAttribute('data-start'));
+      var we = parseFloat(el.getAttribute('data-end'));
+      if (currentTime >= ws && currentTime <= we) {
+        el.classList.add('active');
+        activeWordEl = el;
+      } else {
+        el.classList.remove('active');
+      }
+    });
+  }
+}
+
+loadExams();
+</script>
+</body>
+</html>

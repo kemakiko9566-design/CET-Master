@@ -12,3 +12,33 @@ Thumbs.db
 
 # Temp
 *.tmp
+
+# Deployment scripts (contain server credentials)
+deploy.py
+redeploy.py
+
+# Node / Next.js (精听应用)
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Backup
+*.bak
+*.orig

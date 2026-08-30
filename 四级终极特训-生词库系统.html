@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>四级终极特训 - 生词库系统</title>
+<style>
+:root {
+  --primary: #4A6CF7;
+  --primary-light: #6B8AFF;
+  --primary-dark: #3451C7;
+  --secondary: #F5A623;
+  --success: #22C55E;
+  --danger: #EF4444;
+  --warning: #F59E0B;
+  --bg: #F0F2F5;
+  --card: #FFFFFF;
+  --text: #1F2937;
+  --text-secondary: #6B7280;
+  --border: #E5E7EB;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --nav-height: 64px;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6;
+  overflow-x: hidden; min-height: 100vh;
+}
+.app { max-width: 480px; margin: 0 auto; padding-bottom: calc(var(--nav-height) + 16px); position: relative; }
+
+/* Header */
+.header {
+  position: sticky; top: 0; z-index: 100;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff; padding: 16px 20px 14px;
+  border-radius: 0 0 20px 20px; box-shadow: 0 4px 20px rgba(74,108,247,0.3);
+}
+.header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
+.header .subtitle { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+
+/* Countdown */
+.countdown-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,0.15); border-radius: var(--radius-sm);
+  padding: 10px 14px; margin-top: 10px; backdrop-filter: blur(4px);
+}
+.countdown-bar .days { font-size: 28px; font-weight: 800; line-height: 1; }
+.countdown-bar .days span { font-size: 14px; font-weight: 400; opacity: 0.9; }
+.countdown-bar .exam-date { font-size: 12px; opacity: 0.85; text-align: right; }
+
+/* Bottom Nav */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  background: var(--card); border-top: 1px solid var(--border);
+  display: flex; height: var(--nav-height); padding: 4px 0 env(safe-area-inset-bottom, 4px);
+  max-width: 480px; margin: 0 auto;
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; cursor: pointer; color: var(--text-secondary); transition: all 0.2s;
+  font-size: 11px; border: none; background: none; padding: 4px 0;
+  user-select: none; -webkit-user-select: none;
+}
+.nav-item.active { color: var(--primary); }
+.nav-item .icon { font-size: 22px; line-height: 1.2; }
+.nav-item .label { font-weight: 500; }
+
+/* Pages */
+.page { display: none; padding: 16px; animation: fadeIn 0.25s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+/* Cards */
+.card {
+  background: var(--card); border-radius: var(--radius); padding: 16px;
+  box-shadow: var(--shadow); margin-bottom: 14px;
+}
+.card-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 20px; border-radius: var(--radius-sm); border: none;
+  font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  user-select: none; -webkit-user-select: none;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-warning { background: var(--secondary); color: #fff; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-outline { background: transparent; border: 1.5px solid var(--primary); color: var(--primary); }
+.btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
+.btn-block { width: 100%; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Form */
+.input, .textarea, .select {
+  width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 14px; outline: none;
+  transition: border-color 0.2s; font-family: inherit;
+  background: var(--card); color: var(--text);
+}
+.input:focus, .textarea:focus, .select:focus { border-color: var(--primary); }
+.textarea { min-height: 120px; resize: vertical; }
+.select { appearance: auto; }
+
+/* Tags */
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;
+}
+.tag-listening { background: #E0E7FF; color: #4338CA; }
+.tag-reading { background: #D1FAE5; color: #065F46; }
+.tag-writing { background: #FEF3C7; color: #92400E; }
+
+/* Modal */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,0.45); backdrop-filter: blur(2px);
+  align-items: flex-end; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: var(--card); border-radius: 20px 20px 0 0; padding: 20px;
+  width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+.modal-box h3 { font-size: 18px; margin-bottom: 16px; }
+.modal-close {
+  position: absolute; top: 12px; right: 16px;
+  font-size: 24px; background: none; border: none; cursor: pointer; color: var(--text-secondary);
+}
+
+/* Calendar Grid */
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center;
+}
+.cal-grid .cal-header { font-size: 12px; color: var(--text-secondary); padding: 6px 0; font-weight: 600; }
+.cal-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; font-size: 13px; cursor: pointer; transition: all 0.15s;
+  position: relative;
+}
+.cal-day:hover { background: var(--bg); }
+.cal-day.today { background: var(--primary); color: #fff; font-weight: 700; }
+.cal-day.marked { border: 2px solid var(--success); }
+.cal-day.marked::after {
+  content: ''; position: absolute; bottom: 2px; width: 5px; height: 5px;
+  background: var(--success); border-radius: 50%;
+}
+.cal-day.today.marked::after { background: #fff; }
+.cal-day.other-month { color: #ccc; cursor: default; }
+.cal-day.checked-in { background: var(--success); color: #fff; }
+.cal-day.checked-in::after { background: #fff; }
+
+/* Word items */
+.word-item {
+  padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  margin-bottom: 8px; transition: all 0.15s;
+}
+.word-item:hover { border-color: var(--primary-light); }
+.word-item .word { font-weight: 700; font-size: 16px; }
+.word-item .meta { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+.word-item .sentence { font-size: 13px; color: var(--text-secondary); margin-top: 4px; font-style: italic; padding: 6px 10px; background: var(--bg); border-radius: 6px; }
+
+/* Clickable text */
+.clickable-text {
+  padding: 12px 14px; background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); line-height: 2; font-size: 15px;
+}
+.clickable-text span.word-span {
+  cursor: pointer; padding: 2px 1px; border-radius: 3px; transition: all 0.15s;
+  display: inline;
+}
+.clickable-text span.word-span:hover { background: #DBEAFE; color: var(--primary); }
+.clickable-text span.word-span.saved-listen { background: #E0E7FF; border-bottom: 2px solid #4338CA; }
+.clickable-text span.word-span.saved-read { background: #D1FAE5; border-bottom: 2px solid #065F46; }
+.clickable-text span.word-span.saved-write { background: #FEF3C7; border-bottom: 2px solid #92400E; }
+
+/* Stats */
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.stat-card {
+  background: var(--card); border-radius: var(--radius-sm); padding: 14px 10px;
+  text-align: center; box-shadow: var(--shadow);
+}
+.stat-card .num { font-size: 24px; font-weight: 800; color: var(--primary); }
+.stat-card .label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+/* Streak */
+.streak-display {
+  text-align: center; padding: 20px; background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
+  border-radius: var(--radius);
+}
+.streak-display .fire { font-size: 48px; }
+.streak-display .days { font-size: 36px; font-weight: 800; color: var(--primary); }
+.streak-display .label { font-size: 14px; color: var(--text-secondary); }
+
+/* Chart */
+.chart-container { width: 100%; height: 220px; position: relative; }
+.chart-container canvas { width: 100% !important; height: 100% !important; }
+
+/* Score table */
+.score-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.score-table th, .score-table td { padding: 8px 10px; text-align: center; border-bottom: 1px solid var(--border); }
+.score-table th { background: var(--bg); font-weight: 600; color: var(--text-secondary); }
+.score-table tr:last-child td { border-bottom: none; }
+
+/* Toast */
+.toast {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  z-index: 999; background: #333; color: #fff; padding: 10px 24px;
+  border-radius: 24px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  opacity: 0; transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none; max-width: 90%;
+}
+.toast.show { opacity: 1; }
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; }
+
+/* Sub tabs */
+.sub-tabs {
+  display: flex; background: var(--bg); border-radius: var(--radius-sm); padding: 3px; margin-bottom: 14px;
+}
+.sub-tab {
+  flex: 1; text-align: center; padding: 8px; border-radius: 6px;
+  font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+  border: none; background: none; color: var(--text-secondary);
+}
+.sub-tab.active { background: var(--card); color: var(--primary); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+/* Month nav */
+.month-nav {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+}
+.month-nav button {
+  background: none; border: 1px solid var(--border); border-radius: 50%;
+  width: 36px; height: 36px; font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; color: var(--text);
+}
+.month-nav .month-label { font-size: 16px; font-weight: 600; }
+
+/* Check-in button pulse */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+.btn-checkin { animation: pulse 2s infinite; }
+
+/* Responsive */
+@media (min-width: 768px) {
+  .app { max-width: 600px; padding-bottom: 80px; }
+  .bottom-nav { max-width: 600px; }
+}
+@media (max-width: 360px) {
+  .header { padding: 12px 16px 10px; }
+  .header h1 { font-size: 17px; }
+  .countdown-bar .days { font-size: 22px; }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <!-- Header -->
+  <div class="header" id="header">
+    <h1>📚 四级终极特训</h1>
+    <div class="subtitle">生词库系统 · CET-4 Word Bank</div>
+    <div class="countdown-bar" id="countdownBar">
+      <div><div class="days" id="countdownDays">--</div></div>
+      <div class="exam-date">📅 2026年6月13日<br>四级考试</div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ==================== PAGES ==================== -->
+
+  <!-- Page: Dashboard 首页 -->
+  <div class="page active" id="page-dashboard">
+    <div class="card">
+      <div class="card-title">📊 今日概览</div>
+      <div class="stat-grid" id="dashboardStats">
+        <div class="stat-card"><div class="num" id="statListenWords">0</div><div class="label">听力生词</div></div>
+        <div class="stat-card"><div class="num" id="statReadWords">0</div><div class="label">阅读生词</div></div>
+        <div class="stat-card"><div class="num" id="statWriteWords">0</div><div class="label">写作词汇</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔥 打卡状态</div>
+      <div class="streak-display">
+        <div class="fire">🔥</div>
+        <div class="days" id="streakDays">0</div>
+        <div class="label">天连续打卡</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚡ 快捷操作</div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="navigateTo('page-learning')">📖 开始学习</button>
+        <button class="btn btn-success" onclick="doCheckin()">✅ 今日打卡</button>
+        <button class="btn btn-outline btn-sm" onclick="navigateTo('page-vocab')">📕 查看词库</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📌 最近添加的生词</div>
+      <div id="recentWords"><div class="empty-state"><p>还没有添加生词，开始学习吧！</p></div></div>
+    </div>
+  </div>
+
+  <!-- Page: Learning 学习 -->
+  <div class="page" id="page-learning">
+    <div class="sub-tabs" id="studySubTabs">
+      <button class="sub-tab active" data-tab="listening">👂 听力训练</button>
+      <button class="sub-tab" data-tab="reading">📖 阅读训练</button>
+    </div>
+    <div id="study-listening" class="study-tab-content">
+      <div class="card">
+        <div class="card-title">👂 听力原文</div>
+        <textarea class="textarea" id="listenText" placeholder="在此粘贴听力原文..."></textarea>
+        <div class="btn-group" style="margin-top:8px">
+          <button class="btn btn-primary btn-sm" onclick="processText('listening')">📄 解析文本</button>
+          <button class="btn btn-outline btn-sm" onclick="clearStudyContent('listening')">🗑️ 清空</button>
+        </div>
+      </div>
+      <div id="listenDisplayArea" style="display:none">
+        <div class="card">
+          <div class="card-title">🔍 点击单词添加为生词</div>
+          <div class="clickable-text" id="listenClickable"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 本段已记录生词</div>
+        <div id="listenWordsList"><div class="empty-state"><p>暂无记录</p></div></div>
+      </div>
+    </div>
+    <div id="study-reading" class="study-tab-content" style="display:none">
+      <div class="card">
+        <div class="card-title">📖 阅读文章</div>
+        <textarea class="textarea" id="readText" placeholder="在此粘贴阅读文章..."></textarea>
+        <div class="btn-group" style="margin-top:8px">
+          <button class="btn btn-primary btn-sm" onclick="processText('reading')">📄 解析文本</button>
+          <button class="btn btn-outline btn-sm" onclick="clearStudyContent('reading')">🗑️ 清空</button>
+        </div>
+      </div>
+      <div id="readDisplayArea" style="display:none">
+        <div class="card">
+          <div class="card-title">🔍 点击单词添加为生词</div>
+          <div class="clickable-text" id="readClickable"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 本段已记录生词</div>
+        <div id="readWordsList"><div class="empty-state"><p>暂无记录</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page: Vocab 词库 -->
+  <div class="page" id="page-vocab">
+    <div class="sub-tabs" id="vocabSubTabs">
+      <button class="sub-tab active" data-vtab="all">📚 全部</button>
+      <button class="sub-tab" data-vtab="listening">👂 听力</button>
+      <button class="sub-tab" data-vtab="reading">📖 阅读</button>
+      <button class="sub-tab" data-vtab="writing">✍️ 写作</button>
+    </div>
+    <div class="card">
+      <div class="btn-group" style="margin-bottom:8px">
+        <button class="btn btn-success btn-sm" onclick="exportCSV()">📥 导出CSV</button>
+        <button class="btn btn-warning btn-sm" onclick="showImportModal()">📤 导入CSV</button>
+        <button class="btn btn-danger btn-sm" onclick="clearAllWords()">🗑️ 清空词库</button>
+      </div>
+      <div style="position:relative">
+        <input class="input" type="text" id="vocabSearch" placeholder="🔍 搜索单词..." oninput="renderVocab()">
+      </div>
+    </div>
+    <div id="vocabList"><div class="empty-state"><p>词库空空如也，开始学习添加生词吧！</p></div></div>
+  </div>
+
+  <!-- Page: Test 检测 -->
+  <div class="page" id="page-test">
+    <div class="sub-tabs" id="testSubTabs">
+      <button class="sub-tab active" data-ttab="selftest">📝 水平自测</button>
+      <button class="sub-tab" data-ttab="checkin">✅ 打卡日历</button>
+    </div>
+    <div id="test-selftest" class="test-tab-content">
+      <div class="card">
+        <div class="card-title">📝 四级模考分数预估</div>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">根据听力、阅读的正确率，可大致预估当前分数区间（满分710分）</p>
+        <div style="margin-bottom:12px">
+          <label style="font-size:13px;display:block;margin-bottom:4px">👂 听力正确率（共25题）</label>
+          <input class="input" type="number" id="listenRate" min="0" max="100" placeholder="例如: 60">
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <button class="btn btn-sm btn-outline" onclick="setQuickRate('listen',25)">全对</button>
+            <button class="btn btn-sm btn-outline" onclick="setQuickRate('listen',20)">20/25</button>
+            <button class="btn btn-sm btn-outline" onclick="setQuickRate('listen',15)">15/25</button>
+            <button class="btn btn-sm btn-outline" onclick="setQuickRate('listen',10)">10/25</button>
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:13px;display:block;margin-bottom:4px">📖 阅读正确率（共30题）</label>
+          <input class="input" type="number" id="readRate" min="0" max="100" placeholder="例如: 65">
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <button class="btn btn-sm btn-outline" onclick="setQuickRate('read',30)">全对</button>
+            <button class="btn btn-sm btn-outline" onclick="setQuickRate('read',24)">24/30</button>
+            <button class="btn btn-sm btn-outline" onclick="setQuickRate('read',18)">18/30</button>
+            <button class="btn btn-sm btn-outline" onclick="setQuickRate('read',12)">12/30</button>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="calcScore()">📊 预估分数</button>
+        <div id="scoreResult" style="display:none;margin-top:14px;padding:16px;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border-radius:var(--radius-sm);text-align:center">
+          <div style="font-size:13px;color:var(--text-secondary)">预估总分</div>
+          <div style="font-size:42px;font-weight:800;color:var(--primary)" id="estTotal">--</div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-top:4px" id="estLevel">--</div>
+          <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+            <div>👂 听力 <span id="estListen" style="font-weight:600">--</span></div>
+            <div>📖 阅读 <span id="estRead" style="font-weight:600">--</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 成绩对照参考表</div>
+        <div style="overflow-x:auto">
+          <table class="score-table">
+            <thead><tr><th>正确率</th><th>听力得分</th><th>阅读得分</th><th>总分区间</th></tr></thead>
+            <tbody>
+              <tr><td>90%+</td><td>224+</td><td>224+</td><td>610-710</td></tr>
+              <tr><td>80%</td><td>199</td><td>199</td><td>540-580</td></tr>
+              <tr><td>70%</td><td>174</td><td>174</td><td>480-520</td></tr>
+              <tr><td>60%</td><td>149</td><td>149</td><td>420-460</td></tr>
+              <tr><td>50%</td><td>124</td><td>124</td><td>360-400</td></tr>
+              <tr><td>40%</td><td>99</td><td>99</td><td>300-340</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div id="test-checkin" class="test-tab-content" style="display:none">
+      <div class="card">
+        <div class="card-title">📅 打卡复习日历</div>
+        <div class="month-nav">
+          <button onclick="changeCheckinMonth(-1)">‹</button>
+          <span class="month-label" id="checkinMonthLabel">2026年5月</span>
+          <button onclick="changeCheckinMonth(1)">›</button>
+        </div>
+        <div class="cal-grid" id="checkinCalendar"></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><div class="card-title" style="margin-bottom:0">🔥 连续打卡</div></div>
+          <button class="btn btn-success btn-checkin" onclick="doCheckin()">✅ 今日打卡</button>
+        </div>
+        <div class="streak-display" style="margin-top:12px">
+          <div class="fire">🔥</div>
+          <div class="days" id="checkinStreakDays">0</div>
+          <div class="label">天连续打卡</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 打卡记录</div>
+        <div id="checkinHistory"><div class="empty-state"><p>还没有打卡记录</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page: Analytics 数据 -->
+  <div class="page" id="page-analytics">
+    <div class="card">
+      <div class="card-title">📊 词库统计</div>
+      <div class="stat-grid" id="analyticsStats">
+        <div class="stat-card"><div class="num" id="anaListen">0</div><div class="label">👂 听力</div></div>
+        <div class="stat-card"><div class="num" id="anaRead">0</div><div class="label">📖 阅读</div></div>
+        <div class="stat-card"><div class="num" id="anaWriting">0</div><div class="label">✍️ 写作</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 生词分布图</div>
+      <div class="chart-container"><canvas id="distChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📈 打卡趋势（近30天）</div>
+      <div class="chart-container"><canvas id="checkinChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 月度统计数据</div>
+      <div id="monthlyStats"><div class="empty-state"><p>暂无数据</p></div></div>
+    </div>
+  </div>
+
+  <!-- Hidden file input -->
+  <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="importCSV(event)">
+</div>
+
+<!-- Bottom Navigation -->
+<div class="bottom-nav">
+  <button class="nav-item active" data-page="page-dashboard" onclick="navigateTo('page-dashboard')">
+    <span class="icon">🏠</span><span class="label">首页</span>
+  </button>
+  <button class="nav-item" data-page="page-learning" onclick="navigateTo('page-learning')">
+    <span class="icon">📖</span><span class="label">学习</span>
+  </button>
+  <button class="nav-item" data-page="page-vocab" onclick="navigateTo('page-vocab')">
+    <span class="icon">📕</span><span class="label">词库</span>
+  </button>
+  <button class="nav-item" data-page="page-test" onclick="navigateTo('page-test')">
+    <span class="icon">📝</span><span class="label">检测</span>
+  </button>
+  <button class="nav-item" data-page="page-analytics" onclick="navigateTo('page-analytics')">
+    <span class="icon">📊</span><span class="label">数据</span>
+  </button>
+</div>
+
+<!-- Word Add Modal -->
+<div class="modal-overlay" id="wordModal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="margin:0">📝 添加生词</h3>
+      <button class="modal-close" onclick="closeModal('wordModal')" style="position:static">✕</button>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">单词</label>
+      <input class="input" id="modalWord" readonly style="background:var(--bg);font-weight:700;font-size:16px">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">归类</label>
+      <div style="display:flex;gap:8px" id="modalTypeGroup">
+        <button class="btn btn-sm" data-type="listening" onclick="selectModalType('listening')">👂 听力生词</button>
+        <button class="btn btn-sm" data-type="reading" onclick="selectModalType('reading')">📖 阅读生词</button>
+        <button class="btn btn-sm" data-type="writing" onclick="selectModalType('writing')">✍️ 写作词汇</button>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">词性</label>
+      <select class="select" id="modalPos">
+        <option value="n.">名词 n.</option>
+        <option value="v.">动词 v.</option>
+        <option value="adj.">形容词 adj.</option>
+        <option value="adv.">副词 adv.</option>
+        <option value="prep.">介词 prep.</option>
+        <option value="conj.">连词 conj.</option>
+        <option value="pron.">代词 pron.</option>
+        <option value="num.">数词 num.</option>
+        <option value="art.">冠词 art.</option>
+        <option value="interj.">感叹词 interj.</option>
+        <option value="phr.">短语 phr.</option>
+        <option value="other">其他</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">词义（在原文中的意思）</label>
+      <input class="input" id="modalMeaning" placeholder="请输入词义">
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">原文句子</label>
+      <textarea class="textarea" id="modalSentence" rows="2" placeholder="自动获取原文句子"></textarea>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="saveWordFromModal()">✅ 保存生词</button>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="margin:0">📤 导入CSV生词</h3>
+      <button class="modal-close" onclick="closeModal('importModal')" style="position:static">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">
+      支持导入之前导出的CSV格式文件，格式：word,pos,meaning,sentence,type,source
+    </p>
+    <button class="btn btn-primary btn-block" onclick="document.getElementById('csvFileInput').click()">📁 选择CSV文件</button>
+    <div id="importPreview" style="margin-top:12px;display:none"></div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA STORE =====================
+const STORAGE_KEY = 'cet4_vocab_system';
+const EXAM_DATE = new Date(2026, 5, 13); // 2026年6月13日
+
+let appData = null;
+let currentModalType = 'listening';
+let currentModalContext = null;
+let checkinMonthOffset = 0;
+
+function getDefaultData() {
+  return { words: [], checkins: {}, mockScores: [] };
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      appData = { ...getDefaultData(), ...JSON.parse(raw) };
+    } else {
+      appData = getDefaultData();
+    }
+  } catch(e) {
+    appData = getDefaultData();
+  }
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+  } catch(e) {
+    showToast('存储空间不足，请导出备份后清空数据', 'error');
+  }
+}
+
+// ===================== HELPERS =====================
+function formatDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function todayStr() { return formatDate(new Date()); }
+
+function findSentence(text, word) {
+  if (!text) return '';
+  const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp('[^。！？.!?\n]*' + escaped + '[^。！？.!?\n]*[。！？.!?\n]?', 'i');
+  const match = text.match(regex);
+  return match ? match[0].trim() : '';
+}
+
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+}
+
+function stripPunct(w) {
+  return w.replace(/^[^a-zA-Z\u00C0-\u024F]+|[^a-zA-Z\u00C0-\u024F]+$/g, '');
+}
+
+function countStreak() {
+  const dates = Object.keys(appData.checkins);
+  if (dates.length === 0) return 0;
+  let streak = 0;
+  const today = todayStr();
+  const yesterday = formatDate(new Date(Date.now() - 86400000));
+  let checkDate = today;
+  if (!appData.checkins[today] && appData.checkins[yesterday]) {
+    checkDate = yesterday;
+  } else if (!appData.checkins[today]) {
+    return 0;
+  }
+  while (true) {
+    if (appData.checkins[checkDate]) {
+      streak++;
+      const prev = new Date(checkDate);
+      prev.setDate(prev.getDate() - 1);
+      checkDate = formatDate(prev);
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function getWordsByType(type) {
+  if (type === 'all') return appData.words;
+  return appData.words.filter(w => w.type === type);
+}
+
+// ===================== NAVIGATION =====================
+function navigateTo(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.page === pageId);
+  });
+  if (pageId === 'page-dashboard') refreshDashboard();
+  if (pageId === 'page-vocab') renderVocab();
+  if (pageId === 'page-test') { renderCheckinCalendar(); updateCheckinStreak(); }
+  if (pageId === 'page-analytics') renderAnalytics();
+}
+
+// ===================== TOAST =====================
+let toastTimer = null;
+function showToast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast' + (type ? ' ' + type : '');
+  clearTimeout(toastTimer);
+  void el.offsetWidth;
+  el.classList.add('show');
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ===================== MODAL =====================
+function showModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function selectModalType(type) {
+  currentModalType = type;
+  document.querySelectorAll('#modalTypeGroup .btn').forEach(b => {
+    b.style.background = b.dataset.type === type ? 'var(--primary)' : '';
+    b.style.color = b.dataset.type === type ? '#fff' : '';
+  });
+}
+
+// ===================== COUNTDOWN =====================
+function updateCountdown() {
+  const now = new Date();
+  const diff = EXAM_DATE - now;
+  const el = document.getElementById('countdownDays');
+  if (diff <= 0) {
+    el.textContent = '🎉 已开考';
+    return;
+  }
+  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+  el.innerHTML = `${days}<span> 天</span>`;
+}
+
+// ===================== SUB TABS =====================
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('#studySubTabs .sub-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('#studySubTabs .sub-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      document.querySelectorAll('.study-tab-content').forEach(c => c.style.display = 'none');
+      document.getElementById('study-' + this.dataset.tab).style.display = 'block';
+    });
+  });
+
+  document.querySelectorAll('#vocabSubTabs .sub-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('#vocabSubTabs .sub-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      renderVocab(this.dataset.vtab);
+    });
+  });
+
+  document.querySelectorAll('#testSubTabs .sub-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('#testSubTabs .sub-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      document.querySelectorAll('.test-tab-content').forEach(c => c.style.display = 'none');
+      document.getElementById('test-' + this.dataset.ttab).style.display = 'block';
+      if (this.dataset.ttab === 'checkin') { renderCheckinCalendar(); updateCheckinStreak(); }
+    });
+  });
+});
+
+// ===================== TEXT PROCESSING =====================
+let currentRawText = { listening: '', reading: '' };
+
+function escHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function processText(mode) {
+  const textarea = document.getElementById(mode === 'listening' ? 'listenText' : 'readText');
+  const text = textarea.value.trim();
+  if (!text) { showToast('请先粘贴文本内容', 'error'); return; }
+
+  currentRawText[mode] = text;
+  const displayArea = document.getElementById(mode === 'listening' ? 'listenDisplayArea' : 'readDisplayArea');
+  const clickableDiv = document.getElementById(mode === 'listening' ? 'listenClickable' : 'readClickable');
+
+  const words = text.split(/\s+/).filter(w => w.trim().length > 0);
+  let html = '';
+  words.forEach(w => {
+    const clean = stripPunct(w);
+    if (clean.length > 0) {
+      const saved = appData.words.find(sw => sw.word.toLowerCase() === clean.toLowerCase());
+      let cls = 'word-span';
+      if (saved) {
+        if (saved.type === 'listening') cls += ' saved-listen';
+        else if (saved.type === 'reading') cls += ' saved-read';
+        else cls += ' saved-write';
+      }
+      const safeWord = clean.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      html += `<span class="${cls}" onclick="openWordModal('${safeWord}', '${mode}')">${escHtml(w)}</span> `;
+    } else {
+      html += escHtml(w) + ' ';
+    }
+  });
+  clickableDiv.innerHTML = html;
+  displayArea.style.display = 'block';
+  renderStudyWords(mode);
+  showToast('文本解析完成，点击单词即可添加为生词');
+}
+
+function clearStudyContent(mode) {
+  document.getElementById(mode === 'listening' ? 'listenText' : 'readText').value = '';
+  document.getElementById(mode === 'listening' ? 'listenDisplayArea' : 'readDisplayArea').style.display = 'none';
+  currentRawText[mode] = '';
+  const container = document.getElementById(mode === 'listening' ? 'listenWordsList' : 'readWordsList');
+  container.innerHTML = '<div class="empty-state"><p>暂无记录</p></div>';
+  showToast('已清空');
+}
+
+function renderStudyWords(mode) {
+  const source = mode === 'listening' ? '听力原文' : '阅读文章';
+  const filtered = appData.words.filter(w => w.source === source);
+  const container = document.getElementById(mode === 'listening' ? 'listenWordsList' : 'readWordsList');
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state"><p>本段暂无记录</p></div>';
+    return;
+  }
+  container.innerHTML = filtered.map(w => `
+    <div class="word-item">
+      <div class="word">${escHtml(w.word)} <span class="tag tag-${w.type}">${w.type === 'listening' ? '听力' : w.type === 'reading' ? '阅读' : '写作'}</span></div>
+      <div class="meta">${escHtml(w.pos)} ${escHtml(w.meaning)}</div>
+      <div class="sentence">${escHtml(w.sentence)}</div>
+    </div>
+  `).join('');
+}
+
+// ===================== WORD MODAL =====================
+function openWordModal(word, mode) {
+  currentModalContext = mode;
+  document.getElementById('modalWord').value = word;
+  document.getElementById('modalMeaning').value = '';
+  document.getElementById('modalSentence').value = findSentence(currentRawText[mode], word);
+  const defaultType = mode === 'listening' ? 'listening' : 'reading';
+  selectModalType(defaultType);
+  showModal('wordModal');
+}
+
+function saveWordFromModal() {
+  const word = document.getElementById('modalWord').value.trim();
+  const meaning = document.getElementById('modalMeaning').value.trim();
+  const sentence = document.getElementById('modalSentence').value.trim();
+  const pos = document.getElementById('modalPos').value;
+
+  if (!word) { showToast('单词不能为空', 'error'); return; }
+  if (!meaning) { showToast('请输入词义', 'error'); return; }
+
+  if (appData.words.some(w => w.word.toLowerCase() === word.toLowerCase() && w.type === currentModalType)) {
+    const typeName = currentModalType === 'listening' ? '听力' : currentModalType === 'reading' ? '阅读' : '写作';
+    showToast(`"${word}" 已存在于${typeName}词库中`, 'error');
+    return;
+  }
+
+  const source = currentModalContext === 'listening' ? '听力原文' : '阅读文章';
+  appData.words.push({
+    id: generateId(),
+    word: word,
+    pos: pos,
+    meaning: meaning,
+    sentence: sentence,
+    type: currentModalType,
+    source: source,
+    createdAt: new Date().toISOString()
+  });
+
+  saveData();
+  closeModal('wordModal');
+  const typeName = currentModalType === 'listening' ? '听力' : currentModalType === 'reading' ? '阅读' : '写作';
+  showToast(`✅ "${word}" 已添加到${typeName}词库`);
+
+  if (currentModalContext && currentRawText[currentModalContext]) {
+    processText(currentModalContext);
+  }
+  refreshDashboard();
+}
+
+// ===================== DASHBOARD =====================
+function refreshDashboard() {
+  document.getElementById('statListenWords').textContent = getWordsByType('listening').length;
+  document.getElementById('statReadWords').textContent = getWordsByType('reading').length;
+  document.getElementById('statWriteWords').textContent = getWordsByType('writing').length;
+  document.getElementById('streakDays').textContent = countStreak();
+
+  const recent = appData.words.slice(-5).reverse();
+  const container = document.getElementById('recentWords');
+  if (recent.length === 0) {
+    container.innerHTML = '<div class="empty-state"><p>还没有添加生词，开始学习吧！</p></div>';
+  } else {
+    container.innerHTML = recent.map(w => `
+      <div class="word-item">
+        <div class="word">${escHtml(w.word)} <span class="tag tag-${w.type}">${w.type === 'listening' ? '听力' : w.type === 'reading' ? '阅读' : '写作'}</span></div>
+        <div class="meta">${escHtml(w.pos)} ${escHtml(w.meaning)}</div>
+      </div>
+    `).join('');
+  }
+}
+
+// ===================== CHECK-IN =====================
+function doCheckin() {
+  const today = todayStr();
+  if (appData.checkins[today]) {
+    showToast('今天已经打过卡啦！✅', 'success');
+    return;
+  }
+  appData.checkins[today] = { time: new Date().toISOString() };
+  saveData();
+  const streak = countStreak();
+  document.getElementById('streakDays').textContent = streak;
+  document.getElementById('checkinStreakDays').textContent = streak;
+  renderCheckinCalendar();
+  showToast(`🔥 打卡成功！连续打卡 ${streak} 天`);
+}
+
+function changeCheckinMonth(delta) {
+  checkinMonthOffset += delta;
+  renderCheckinCalendar();
+}
+
+function renderCheckinCalendar() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + checkinMonthOffset;
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startDay = firstDay.getDay();
+
+  document.getElementById('checkinMonthLabel').textContent = `${year}年${month + 1}月`;
+
+  let html = '<div class="cal-header">日</div><div class="cal-header">一</div><div class="cal-header">二</div><div class="cal-header">三</div><div class="cal-header">四</div><div class="cal-header">五</div><div class="cal-header">六</div>';
+
+  for (let i = 0; i < startDay; i++) {
+    html += '<div class="cal-day other-month"></div>';
+  }
+
+  const today = todayStr();
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const dateObj = new Date(year, month, d);
+    const dateStr = formatDate(dateObj);
+    let cls = 'cal-day';
+    if (dateStr === today) cls += ' today';
+    if (appData.checkins[dateStr]) cls += ' checked-in';
+    if (dateObj > now) cls += ' other-month';
+    html += `<div class="${cls}" onclick="toggleCheckinDay('${dateStr}')">${d}</div>`;
+  }
+
+  document.getElementById('checkinCalendar').innerHTML = html;
+  updateCheckinStreak();
+  renderCheckinHistory();
+}
+
+function toggleCheckinDay(dateStr) {
+  const now = new Date();
+  const date = new Date(dateStr);
+  if (date > now) { showToast('不能打卡未来的日期', 'error'); return; }
+
+  if (appData.checkins[dateStr]) {
+    if (dateStr === todayStr()) {
+      delete appData.checkins[dateStr];
+      saveData();
+      renderCheckinCalendar();
+      updateCheckinStreak();
+      showToast('已取消今日打卡');
+    } else {
+      showToast('过去日期的打卡记录不可删除');
+    }
+  } else {
+    appData.checkins[dateStr] = { time: new Date().toISOString() };
+    saveData();
+    renderCheckinCalendar();
+    updateCheckinStreak();
+    showToast(`✅ ${dateStr} 打卡成功`);
+  }
+}
+
+function updateCheckinStreak() {
+  const streak = countStreak();
+  document.getElementById('checkinStreakDays').textContent = streak;
+  document.getElementById('streakDays').textContent = streak;
+}
+
+function renderCheckinHistory() {
+  const dates = Object.keys(appData.checkins).sort().reverse();
+  const container = document.getElementById('checkinHistory');
+  if (dates.length === 0) {
+    container.innerHTML = '<div class="empty-state"><p>还没有打卡记录</p></div>';
+    return;
+  }
+  const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
+  container.innerHTML = dates.slice(0, 30).map(d => {
+    const date = new Date(d);
+    const wd = weekdays[date.getDay()];
+    return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
+      <span>${d} ${wd}</span>
+      <span style="color:var(--success)">✅ 已打卡</span>
+    </div>`;
+  }).join('');
+}
+
+// ===================== SELF-TEST =====================
+function setQuickRate(type, correct) {
+  if (type === 'listen') {
+    document.getElementById('listenRate').value = Math.round(correct / 25 * 100);
+  } else {
+    document.getElementById('readRate').value = Math.round(correct / 30 * 100);
+  }
+}
+
+function calcScore() {
+  const listenPct = parseFloat(document.getElementById('listenRate').value) || 0;
+  const readPct = parseFloat(document.getElementById('readRate').value) || 0;
+
+  if (listenPct <= 0 && readPct <= 0) {
+    showToast('请输入至少一项正确率', 'error');
+    return;
+  }
+
+  // 简化预估模型：听力/阅读满分各248.5分
+  const listenScore = Math.round(248.5 * Math.pow(listenPct / 100, 0.85) * 0.95);
+  const readScore = Math.round(248.5 * Math.pow(readPct / 100, 0.85) * 0.95);
+  const total = Math.min(710, listenScore + readScore + 213); // 213 = 写作+翻译基础分
+
+  document.getElementById('estListen').textContent = listenScore;
+  document.getElementById('estRead').textContent = readScore;
+  document.getElementById('estTotal').textContent = total;
+
+  let level = '';
+  if (total >= 600) level = '🏆 优秀！大概率通过，冲击高分！';
+  else if (total >= 525) level = '🌟 良好！通过希望很大！';
+  else if (total >= 425) level = '✅ 合格线附近，继续加油！';
+  else if (total >= 350) level = '💪 还需努力，多背单词多刷题！';
+  else level = '📚 差距较大，建议制定系统复习计划！';
+
+  document.getElementById('estLevel').textContent = level;
+  document.getElementById('scoreResult').style.display = 'block';
+
+  appData.mockScores.push({ date: todayStr(), listenPct, readPct, listenScore, readScore, total });
+  saveData();
+}
+
+// ===================== VOCAB =====================
+function renderVocab(filterType) {
+  if (!filterType) {
+    const active = document.querySelector('#vocabSubTabs .sub-tab.active');
+    filterType = active ? active.dataset.vtab : 'all';
+  }
+
+  const search = (document.getElementById('vocabSearch').value || '').toLowerCase();
+  let words = getWordsByType(filterType);
+  if (search) {
+    words = words.filter(w =>
+      w.word.toLowerCase().includes(search) ||
+      w.meaning.toLowerCase().includes(search)
+    );
+  }
+
+  const container = document.getElementById('vocabList');
+  if (words.length === 0) {
+    container.innerHTML = '<div class="card"><div class="empty-state"><p>没有匹配的生词</p></div></div>';
+    return;
+  }
+
+  container.innerHTML = words.map(w => `
+    <div class="card word-item" style="padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <div>
+          <div class="word">${escHtml(w.word)}</div>
+          <div class="meta">${escHtml(w.pos)} ${escHtml(w.meaning)}</div>
+        </div>
+        <span class="tag tag-${w.type}">${w.type === 'listening' ? '听力' : w.type === 'reading' ? '阅读' : '写作'}</span>
+      </div>
+      ${w.sentence ? `<div class="sentence">${escHtml(w.sentence)}</div>` : ''}
+      <div style="font-size:11px;color:#999;margin-top:6px">📅 ${w.createdAt ? w.createdAt.substr(0,10) : ''}</div>
+      <div style="margin-top:6px"><button class="btn btn-sm btn-danger" onclick="deleteWord('${w.id}')">删除</button></div>
+    </div>
+  `).join('');
+}
+
+function deleteWord(id) {
+  if (!confirm('确定要删除这个生词吗？')) return;
+  appData.words = appData.words.filter(w => w.id !== id);
+  saveData();
+  renderVocab();
+  refreshDashboard();
+  showToast('已删除');
+}
+
+function clearAllWords() {
+  if (!confirm('确定要清空所有生词吗？此操作不可恢复！\n建议先导出CSV备份。')) return;
+  if (!confirm('再次确认：真的要清空整个词库吗？')) return;
+  appData.words = [];
+  saveData();
+  renderVocab();
+  refreshDashboard();
+  showToast('词库已清空');
+}
+
+// ===================== CSV EXPORT/IMPORT =====================
+function exportCSV() {
+  if (appData.words.length === 0) {
+    showToast('词库为空，没有可导出的内容', 'error');
+    return;
+  }
+
+  const headers = ['word','pos','meaning','sentence','type','source','createdAt'];
+  const rows = appData.words.map(w => [
+    escapeCSV(w.word),
+    escapeCSV(w.pos),
+    escapeCSV(w.meaning),
+    escapeCSV(w.sentence || ''),
+    w.type,
+    escapeCSV(w.source || ''),
+    w.createdAt || ''
+  ]);
+
+  let csv = headers.join(',') + '\n';
+  csv += rows.map(r => r.join(',')).join('\n');
+
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `四级生词库_${todayStr()}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+  showToast(`📥 已导出 ${appData.words.length} 个生词`);
+}
+
+function escapeCSV(str) {
+  if (!str) return '';
+  const s = String(str);
+  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+function showImportModal() {
+  document.getElementById('importPreview').style.display = 'none';
+  showModal('importModal');
+}
+
+function importCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const content = e.target.result;
+    const lines = content.split(/\r?\n/).filter(l => l.trim().length > 0);
+
+    if (lines.length < 2) {
+      showToast('CSV文件格式不正确', 'error');
+      return;
+    }
+
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const wordIdx = headers.indexOf('word');
+    const posIdx = headers.indexOf('pos');
+    const meaningIdx = headers.indexOf('meaning');
+    const sentenceIdx = headers.indexOf('sentence');
+    const typeIdx = headers.indexOf('type');
+    const sourceIdx = headers.indexOf('source');
+
+    if (wordIdx === -1 || meaningIdx === -1) {
+      showToast('CSV缺少必要列(word, meaning)', 'error');
+      return;
+    }
+
+    let imported = 0;
+    let skipped = 0;
+
+    for (let i = 1; i < lines.length; i++) {
+      const vals = parseCSVLine(lines[i]);
+      const w = (vals[wordIdx] || '').trim();
+      if (!w) continue;
+
+      const type = typeIdx >= 0 ? (vals[typeIdx] || '').trim() : 'reading';
+      if (!['listening','reading','writing'].includes(type)) continue;
+
+      if (appData.words.some(ex => ex.word.toLowerCase() === w.toLowerCase() && ex.type === type)) {
+        skipped++;
+        continue;
+      }
+
+      appData.words.push({
+        id: generateId(),
+        word: w,
+        pos: posIdx >= 0 ? (vals[posIdx] || '').trim() : '',
+        meaning: meaningIdx >= 0 ? (vals[meaningIdx] || '').trim() : '',
+        sentence: sentenceIdx >= 0 ? (vals[sentenceIdx] || '').trim() : '',
+        type: type,
+        source: sourceIdx >= 0 ? (vals[sourceIdx] || '').trim() : '',
+        createdAt: new Date().toISOString()
+      });
+      imported++;
+    }
+
+    saveData();
+    closeModal('importModal');
+    renderVocab();
+    refreshDashboard();
+    showToast(`📤 导入完成：成功 ${imported} 个，跳过 ${skipped} 个`);
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (i + 1 < line.length && line[i+1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        current += ch;
+      }
+    } else {
+      if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ',') {
+        result.push(current);
+        current = '';
+      } else {
+        current += ch;
+      }
+    }
+  }
+  result.push(current);
+  return result;
+}
+
+// ===================== ANALYTICS =====================
+function renderAnalytics() {
+  const listenCount = getWordsByType('listening').length;
+  const readCount = getWordsByType('reading').length;
+  const writeCount = getWordsByType('writing').length;
+
+  document.getElementById('anaListen').textContent = listenCount;
+  document.getElementById('anaRead').textContent = readCount;
+  document.getElementById('anaWriting').textContent = writeCount;
+
+  drawDistributionChart(listenCount, readCount, writeCount);
+  drawCheckinChart();
+  renderMonthlyStats();
+}
+
+function setupCanvas(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const W = rect.width || 300;
+  const H = rect.height || 200;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+  return { ctx, W, H };
+}
+
+function drawDistributionChart(l, r, w) {
+  const { ctx, W, H } = setupCanvas('distChart');
+
+  const total = l + r + w;
+  const colors = ['#4A6CF7', '#22C55E', '#F5A623'];
+  const labels = ['听力', '阅读', '写作'];
+  const values = [l, r, w];
+
+  if (total === 0) {
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('暂无生词数据', W/2, H/2);
+    return;
+  }
+
+  const cx = W * 0.35, cy = H / 2;
+  const radius = Math.min(W, H) * 0.32;
+  let startAngle = -Math.PI / 2;
+
+  values.forEach((val, i) => {
+    if (val === 0) return;
+    const angle = (val / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, startAngle, startAngle + angle);
+    ctx.closePath();
+    ctx.fillStyle = colors[i];
+    ctx.fill();
+    startAngle += angle;
+  });
+
+  // Donut hole
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius * 0.5, 0, Math.PI * 2);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+
+  ctx.fillStyle = '#1F2937';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(String(total), cx, cy - 6);
+  ctx.font = '11px sans-serif';
+  ctx.fillStyle = '#6B7280';
+  ctx.fillText('生词', cx, cy + 16);
+
+  // Legend
+  const legendX = W * 0.68;
+  const legendY = H * 0.25;
+  ctx.font = '13px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  labels.forEach((label, i) => {
+    const y = legendY + i * 30;
+    ctx.fillStyle = colors[i];
+    ctx.fillRect(legendX, y - 5, 12, 12);
+    ctx.fillStyle = '#1F2937';
+    ctx.fillText(`${label} (${values[i]})`, legendX + 18, y + 1);
+  });
+}
+
+function drawCheckinChart() {
+  const { ctx, W, H } = setupCanvas('checkinChart');
+
+  const days = [];
+  const today = new Date();
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dateStr = formatDate(d);
+    days.push({ date: dateStr, label: String(d.getDate()), checked: !!appData.checkins[dateStr] });
+  }
+
+  if (days.every(d => !d.checked)) {
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('暂无打卡数据', W/2, H/2);
+    return;
+  }
+
+  const pad = { top: 20, bottom: 28, left: 24, right: 12 };
+  const chartW = W - pad.left - pad.right;
+  const chartH = H - pad.top - pad.bottom;
+  const slot = chartW / days.length;
+  const barW = slot * 0.6;
+
+  days.forEach((d, i) => {
+    const x = pad.left + i * slot + slot * 0.2;
+    const barH = d.checked ? chartH : 4;
+    if (d.checked) {
+      const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + chartH);
+      grad.addColorStop(0, '#4A6CF7');
+      grad.addColorStop(1, '#6B8AFF');
+      ctx.fillStyle = grad;
+    } else {
+      ctx.fillStyle = '#F3F4F6';
+    }
+    const radius = Math.min(barW / 2, 3);
+    ctx.beginPath();
+    ctx.moveTo(x + radius, pad.top + chartH);
+    ctx.lineTo(x + radius, pad.top + chartH - barH + radius);
+    ctx.quadraticCurveTo(x + radius, pad.top + chartH - barH, x + barW - radius, pad.top + chartH - barH);
+    ctx.lineTo(x + barW - radius, pad.top + chartH);
+    ctx.quadraticCurveTo(x + barW, pad.top + chartH, x + barW, pad.top + chartH);
+    ctx.closePath();
+    ctx.fill();
+  });
+
+  ctx.fillStyle = '#9CA3AF';
+  ctx.font = '9px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  days.forEach((d, i) => {
+    if (i % 5 === 0 || i === days.length - 1) {
+      ctx.fillText(d.label, pad.left + i * slot + slot * 0.2 + barW / 2, pad.top + chartH + 4);
+    }
+  });
+
+  ctx.fillStyle = '#9CA3AF';
+  ctx.font = '10px sans-serif';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('已打卡', pad.left - 4, pad.top + 10);
+}
+
+function renderMonthlyStats() {
+  const container = document.getElementById('monthlyStats');
+  const checkinDates = Object.keys(appData.checkins);
+  if (checkinDates.length === 0) {
+    container.innerHTML = '<div class="empty-state"><p>暂无数据</p></div>';
+    return;
+  }
+
+  const months = {};
+  checkinDates.forEach(d => {
+    const month = d.substring(0, 7);
+    months[month] = (months[month] || 0) + 1;
+  });
+
+  const wordMonths = {};
+  appData.words.forEach(w => {
+    if (!w.createdAt) return;
+    const month = w.createdAt.substring(0, 7);
+    wordMonths[month] = (wordMonths[month] || 0) + 1;
+  });
+
+  const sorted = Object.keys(months).sort().reverse();
+  container.innerHTML = sorted.map(m => `
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
+      <span style="font-weight:600">${m}</span>
+      <span>✅ 打卡 ${months[m]} 天 ${wordMonths[m] ? '| 📝 新增 ' + wordMonths[m] + ' 词' : ''}</span>
+    </div>
+  `).join('');
+}
+
+// ===================== INIT =====================
+function init() {
+  loadData();
+  updateCountdown();
+  refreshDashboard();
+
+  setInterval(updateCountdown, 60000);
+
+  renderCheckinCalendar();
+  renderCheckinHistory();
+
+  let resizeTimer;
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() {
+      if (document.getElementById('page-analytics').classList.contains('active')) {
+        renderAnalytics();
+      }
+    }, 300);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
+
+
+
